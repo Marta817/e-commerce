@@ -12,13 +12,12 @@ body {
   margin: 0;
   font-family: "Plus Jakarta Sans", sans-serif;
   color: #17213f;
-  background:
-    linear-gradient(
-      135deg,
-      #f8edf6 0%,
-      #fffaf8 52%,
-      #eeeafd 100%
-    );
+  background: linear-gradient(
+    135deg,
+    #f8edf6 0%,
+    #fffaf8 52%,
+    #eeeafd 100%
+  );
 }
 
 button,

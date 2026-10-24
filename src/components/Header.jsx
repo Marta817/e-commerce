@@ -1,17 +1,17 @@
 function Header() {
   return (
     <header className="header-store">
-      <div className="header-brand">
-        <button className="mobile-menu-button">☰</button>
-
+      <div className="header-left">
         <div className="store-logo">
           STOREKU<span>.</span>
         </div>
       </div>
 
-      <button className="login-button">
-        Masuk / Login
-      </button>
+      <div className="header-right">
+        <button className="login-button" type="button">
+          Masuk / Login
+        </button>
+      </div>
     </header>
   );
 }

@@ -1,23 +1,54 @@
-function Navbar() {
+function BenefitSection() {
+  const benefits = [
+    {
+      icon: "🚚",
+      title: "Pengiriman Mudah",
+      description: "Pesanan diproses dengan cepat.",
+    },
+    {
+      icon: "✓",
+      title: "Produk Pilihan",
+      description: "Pilihan produk untuk kebutuhanmu.",
+    },
+    {
+      icon: "♡",
+      title: "Belanja Nyaman",
+      description: "Tampilan sederhana dan mudah digunakan.",
+    },
+    {
+      icon: "🔒",
+      title: "Aman & Terpercaya",
+      description: "Pengalaman belanja yang nyaman.",
+    },
+  ];
+
   return (
-    <nav className="navbar">
-      <div className="navbar-container">
-        <div className="logo">
-          e-commerce
-        </div>
+    <section className="benefit-section">
+      <div className="benefit-heading">
+        <span className="section-kicker">KENAPA STOREKU?</span>
 
-        <div className="nav-menu">
-          <a href="#home">Beranda</a>
-          <a href="#products">Produk</a>
-          <a href="#about">Tentang</a>
-        </div>
-
-        <button className="cart-button">
-          🛒 Keranjang
-        </button>
+        <h2>
+          Belanja Lebih
+          <br />
+          Nyaman.
+        </h2>
       </div>
-    </nav>
+
+      <div className="benefit-grid">
+        {benefits.map((benefit) => (
+          <div className="benefit-card" key={benefit.title}>
+            <div className="benefit-icon">
+              {benefit.icon}
+            </div>
+
+            <h3>{benefit.title}</h3>
+
+            <p>{benefit.description}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
-export default Navbar;
+export default BenefitSection;

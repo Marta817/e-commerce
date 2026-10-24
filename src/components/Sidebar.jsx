@@ -6,34 +6,38 @@ import {
   UserRound,
 } from "lucide-react";
 
-function Sidebar() {
+function Sidebar({ activePage, onPageChange }) {
   const menuItems = [
     {
       icon: House,
       label: "Beranda",
-      active: true,
+      page: "beranda",
     },
     {
       icon: ShoppingBag,
       label: "Produk",
+      page: "produk",
     },
     {
       icon: Tag,
       label: "Promo",
+      page: "promo",
     },
     {
       icon: ClipboardList,
       label: "Pemesanan",
+      page: "pemesanan",
     },
     {
       icon: UserRound,
       label: "Akun",
+      page: "akun",
     },
   ];
 
   return (
     <aside className="sidebar">
-      <div className="sidebar-title">
+      <div className="sidebar-heading">
         MENU STOREKU
       </div>
 
@@ -42,24 +46,36 @@ function Sidebar() {
           const Icon = item.icon;
 
           return (
-            <a
-              href="#"
-              key={item.label}
+            <button
+              key={item.page}
+              type="button"
               className={`sidebar-link ${
-                item.active ? "active" : ""
+                activePage === item.page ? "active" : ""
               }`}
+              onClick={() => onPageChange(item.page)}
             >
               <Icon
                 className="sidebar-icon"
-                size={18}
+                size={19}
                 strokeWidth={2}
               />
 
               <span>{item.label}</span>
-            </a>
+            </button>
           );
         })}
       </nav>
+
+      <div className="sidebar-bottom">
+        <div className="sidebar-help">
+          <span className="help-icon">?</span>
+
+          <div>
+            <strong>Butuh Bantuan?</strong>
+            <small>Hubungi kami</small>
+          </div>
+        </div>
+      </div>
     </aside>
   );
 }
