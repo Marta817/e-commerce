@@ -5,10 +5,10 @@ Repository ini merupakan lanjutan dari proyek tugas pekan 2 (aplikasi web e-comm
 ---
 
 ## 👤 Identitas Mahasiswa
-- **Nama** : [Nama Lengkap Mahasiswa]
-- **NIM** : [NIM Mahasiswa]
-- **Kelas** : [Kelas / Paralel]
-- **Mata Kuliah** : Pengembangan Aplikasi Web / Praktikum Pemrograman Web
+- **Nama** : Marta
+- **NIM** : [Isi NIM]
+- **Kelas** : [Isi Kelas]
+- **Mata Kuliah** : Praktikum Pemrograman Web / Pengembangan Aplikasi Web
 
 ---
 
