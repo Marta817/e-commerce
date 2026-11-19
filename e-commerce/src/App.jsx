@@ -10,6 +10,7 @@ import PromoSection from "./components/PromoSection";
 import BenefitSection from "./components/BenefitSection";
 import OrderManagement from "./components/OrderManagement";
 import LoginForm from "./components/LoginForm";
+import HelpCenterModal from "./components/HelpCenterModal";
 import { translations } from "./utils/translations";
 
 import products from "./data/product";
@@ -1058,125 +1059,14 @@ function App() {
             />
           )}
 
-          {/* ================= MODAL PUSAT BANTUAN ================= */}
-          {showHelpModal && (
-            <div
-              style={{
-                position: "fixed",
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
-                backgroundColor: "rgba(0,0,0,0.5)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                zIndex: 9999,
-                padding: "16px",
-              }}
-              onClick={() => setShowHelpModal(false)}
-            >
-              <div
-                style={{
-                  backgroundColor: "#ffffff",
-                  borderRadius: "16px",
-                  padding: "26px",
-                  maxWidth: "540px",
-                  width: "100%",
-                  maxHeight: "90vh",
-                  overflowY: "auto",
-                  boxShadow: "0 25px 50px -12px rgba(0,0,0,0.25)",
-                }}
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "16px" }}>
-                  <div>
-                    <span className="section-kicker">STOREKU CARE</span>
-                    <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "4px 0 0" }}>
-                      {t.helpCenterTitle}
-                    </h2>
-                    <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#64748b" }}>
-                      {t.helpCenterSubtitle}
-                    </p>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowHelpModal(false)}
-                    style={{
-                      background: "#f1f5f9",
-                      border: "none",
-                      width: "32px",
-                      height: "32px",
-                      borderRadius: "50%",
-                      fontSize: "16px",
-                      cursor: "pointer",
-                      color: "#64748b",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                <div style={{ marginBottom: "20px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#1e293b", marginBottom: "12px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span>💡</span> {t.faqTitle}
-                  </h3>
-
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ background: "#f8fafc", padding: "12px 14px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
-                      <strong style={{ fontSize: "13px", color: "#0f172a", display: "block", marginBottom: "4px" }}>
-                        🛍️ {t.faq1Q}
-                      </strong>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#475569", lineHeight: "1.5" }}>
-                        {t.faq1A}
-                      </p>
-                    </div>
-
-                    <div style={{ background: "#f8fafc", padding: "12px 14px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
-                      <strong style={{ fontSize: "13px", color: "#0f172a", display: "block", marginBottom: "4px" }}>
-                        🔄 {t.faq2Q}
-                      </strong>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#475569", lineHeight: "1.5" }}>
-                        {t.faq2A}
-                      </p>
-                    </div>
-
-                    <div style={{ background: "#f8fafc", padding: "12px 14px", borderRadius: "10px", border: "1px solid #e2e8f0" }}>
-                      <strong style={{ fontSize: "13px", color: "#0f172a", display: "block", marginBottom: "4px" }}>
-                        ❌ {t.faq3Q}
-                      </strong>
-                      <p style={{ margin: 0, fontSize: "13px", color: "#475569", lineHeight: "1.5" }}>
-                        {t.faq3A}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                <div style={{ background: "#eff6ff", padding: "14px", borderRadius: "12px", border: "1px solid #bfdbfe", marginBottom: "20px" }}>
-                  <h3 style={{ fontSize: "14px", fontWeight: "700", color: "#1e3a8a", margin: "0 0 8px", display: "flex", alignItems: "center", gap: "6px" }}>
-                    <span>📞</span> {t.contactTitle}
-                  </h3>
-                  <div style={{ fontSize: "13px", color: "#1e40af", display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <div><strong>WhatsApp:</strong> +62 812-3456-7890</div>
-                    <div><strong>Email:</strong> support@storeku.id</div>
-                    <div style={{ fontSize: "12px", color: "#3b82f6", marginTop: "4px" }}>⏰ {t.csHours}</div>
-                  </div>
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setShowHelpModal(false)}
-                  className="primary-page-button"
-                  style={{ width: "100%", padding: "10px" }}
-                >
-                  {t.closeHelp}
-                </button>
-              </div>
-            </div>
-          )}
+          {/* ================= MODAL PUSAT BANTUAN (FAQ INTERAKTIF & LIVE CHAT CS) ================= */}
+          <HelpCenterModal
+            isOpen={showHelpModal}
+            onClose={() => setShowHelpModal(false)}
+            currentUser={currentUser}
+            t={t}
+            language={language}
+          />
 
           <footer className="store-footer">
             <div>
