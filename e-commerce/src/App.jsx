@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import "./App.css";
 
@@ -10,6 +9,7 @@ import ProductCard from "./components/ProductCard";
 import PromoSection from "./components/PromoSection";
 import BenefitSection from "./components/BenefitSection";
 import ProductManagement from "./components/ProductManagement";
+import LoginForm from "./components/LoginForm";
 
 import products from "./data/product";
 
@@ -22,7 +22,7 @@ const categories = [
 
 const promoProducts = [
   {
-    name: "Sneakers",
+    name: "Sneakers Sporty",
     category: "Sepatu",
     image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop",
     oldPrice: "Rp499.000",
@@ -38,7 +38,7 @@ const promoProducts = [
     discount: "20%",
   },
   {
-    name: "Backpack",
+    name: "Backpack Casual",
     category: "Tas",
     image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?q=80&w=600&auto=format&fit=crop",
     oldPrice: "Rp219.000",
@@ -54,6 +54,33 @@ function App() {
   const [productsList, setProductsList] = useState(products);
   const [isBackendConnected, setIsBackendConnected] = useState(false);
   const [isLoadingBackend, setIsLoadingBackend] = useState(false);
+
+  // Filter & Search & Sort State
+  const [searchKeyword, setSearchKeyword] = useState("");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("Semua");
+  const [sortBy, setSortBy] = useState("terbaru");
+
+  // Auth State
+  const [currentUser, setCurrentUser] = useState(() => {
+    try {
+      const saved = localStorage.getItem("storeku_user");
+      return saved ? JSON.parse(saved) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  // Orders State
+  const [orders, setOrders] = useState([
+    {
+      id: 101,
+      productName: "Kaos Oversize",
+      price: 129000,
+      image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop",
+      date: "18 Nov 2026",
+      status: "Selesai",
+    },
+  ]);
 
   const fetchProducts = async () => {
     try {
@@ -82,13 +109,11 @@ function App() {
     setActivePage(page);
     setSelectedProduct(null);
     setShowLogin(false);
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
-
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -96,9 +121,72 @@ function App() {
     handlePageChange("akun");
   };
 
+  const handleCategoryClick = (categoryName) => {
+    setSelectedCategoryFilter(categoryName);
+    handlePageChange("produk");
+  };
+
+  const handleLoginSuccess = (userData) => {
+    setCurrentUser(userData);
+    localStorage.setItem("storeku_user", JSON.stringify(userData));
+    setShowLogin(false);
+    setActivePage("akun");
+    alert(`Selamat datang kembali, ${userData.name}! Login berhasil.`);
+  };
+
+  const handleLogout = () => {
+    if (window.confirm("Apakah Anda yakin ingin keluar dari akun?")) {
+      setCurrentUser(null);
+      localStorage.removeItem("storeku_user");
+      alert("Anda telah berhasil logout.");
+    }
+  };
+
+  const handleOrderProduct = (product) => {
+    const newOrder = {
+      id: Date.now(),
+      productName: product.name,
+      price: product.price,
+      image: product.image,
+      date: new Date().toLocaleDateString("id-ID", {
+        day: "numeric",
+        month: "short",
+        year: "numeric",
+      }),
+      status: "Diproses",
+    };
+    setOrders([newOrder, ...orders]);
+    setSelectedProduct(null);
+    setActivePage("pemesanan");
+    alert(`Pesanan untuk "${product.name}" berhasil dibuat!`);
+  };
+
+  // Filtered and Sorted Products for "Produk" Page
+  const displayedProducts = productsList
+    .filter((p) => {
+      const matchesCategory =
+        selectedCategoryFilter === "Semua" || p.category === selectedCategoryFilter;
+      const matchesSearch =
+        !searchKeyword ||
+        p.name.toLowerCase().includes(searchKeyword.toLowerCase());
+      return matchesCategory && matchesSearch;
+    })
+    .sort((a, b) => {
+      const priceA = typeof a.price === "number" ? a.price : 0;
+      const priceB = typeof b.price === "number" ? b.price : 0;
+      if (sortBy === "termurah") return priceA - priceB;
+      if (sortBy === "termahal") return priceB - priceA;
+      return (b.id || 0) - (a.id || 0); // terbaru
+    });
+
   return (
     <div className="storeku-app">
-      <Header />
+      <Header
+        currentUser={currentUser}
+        onLoginClick={() => setShowLogin(true)}
+        onLogoutClick={handleLogout}
+        onLogoClick={() => handlePageChange("beranda")}
+      />
 
       <div className="app-body">
         <Sidebar
@@ -117,7 +205,14 @@ function App() {
                     <span>⌕</span>
                     <input
                       type="text"
-                      placeholder="Cari produk favoritmu..."
+                      placeholder="Cari produk favoritmu (tekan Enter)..."
+                      value={searchKeyword}
+                      onChange={(e) => setSearchKeyword(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          handlePageChange("produk");
+                        }
+                      }}
                     />
                   </div>
 
@@ -127,7 +222,7 @@ function App() {
                   </div>
                 </section>
 
-                <Hero />
+                <Hero onExploreClick={() => handlePageChange("produk")} />
 
                 <section className="section-block">
                   <div className="section-heading">
@@ -142,6 +237,7 @@ function App() {
                       <CategoryCard
                         key={category.name}
                         {...category}
+                        onClick={handleCategoryClick}
                       />
                     ))}
                   </div>
@@ -176,34 +272,49 @@ function App() {
                   </div>
                 </section>
 
-                <PromoSection />
+                <PromoSection onShopClick={() => handlePageChange("promo")} />
                 <BenefitSection />
               </>
             )}
 
           {/* ================= PRODUK ================= */}
-          {activePage === "produk" && !selectedProduct && (
+          {activePage === "produk" && !selectedProduct && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">STOREKU</span>
+                <span className="section-kicker">STOREKU KATALOG</span>
                 <h1>Produk</h1>
                 <p>
-                  Temukan berbagai produk fashion dan lifestyle
-                  pilihan Storeku.
+                  Temukan berbagai produk fashion dan lifestyle pilihan Storeku.
                 </p>
               </div>
 
-              <div className="product-toolbar">
+              <div className="product-toolbar" style={{ flexWrap: "wrap", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                  <span>Menampilkan {productsList.length} produk</span>
+                  <span>Menampilkan <strong>{displayedProducts.length}</strong> produk</span>
+                  {selectedCategoryFilter !== "Semua" && (
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategoryFilter("Semua")}
+                      style={{
+                        padding: "2px 8px",
+                        fontSize: "12px",
+                        borderRadius: "999px",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: "#f3f4f6",
+                        cursor: "pointer",
+                      }}
+                    >
+                      Kategori: {selectedCategoryFilter} ✕
+                    </button>
+                  )}
                   {isBackendConnected && (
-                    <span style={{ fontSize: "12px", color: "#059669", fontWeight: "600", display: "inline-flex", alignItems: "center", gap: "4px" }}>
+                    <span style={{ fontSize: "12px", color: "#059669", fontWeight: "600" }}>
                       ● Live dari Backend NestJS
                     </span>
                   )}
                 </div>
 
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
                   <button
                     type="button"
                     className="primary-page-button"
@@ -213,7 +324,24 @@ function App() {
                     + Kelola Produk (CRUD)
                   </button>
 
-                  <select defaultValue="terbaru">
+                  <select
+                    value={selectedCategoryFilter}
+                    onChange={(e) => setSelectedCategoryFilter(e.target.value)}
+                    style={{ padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                  >
+                    <option value="Semua">Semua Kategori</option>
+                    <option value="Pakaian">Pakaian</option>
+                    <option value="Outerwear">Outerwear</option>
+                    <option value="Sepatu">Sepatu</option>
+                    <option value="Tas">Tas</option>
+                    <option value="Aksesori">Aksesori</option>
+                  </select>
+
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value)}
+                    style={{ padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                  >
                     <option value="terbaru">Produk Terbaru</option>
                     <option value="termurah">Harga Terendah</option>
                     <option value="termahal">Harga Tertinggi</option>
@@ -221,20 +349,37 @@ function App() {
                 </div>
               </div>
 
-              <div className="product-grid">
-                {productsList.map((product) => (
-                  <ProductCard
-                    key={product.id || `${product.name}-${product.image}`}
-                    product={product}
-                    onClick={handleProductClick}
-                  />
-                ))}
-              </div>
+              {displayedProducts.length === 0 ? (
+                <div style={{ textAlign: "center", padding: "60px 20px", color: "#6b7280" }}>
+                  <p style={{ fontSize: "18px", fontWeight: "600" }}>Tidak ada produk yang cocok dengan pencarian.</p>
+                  <button
+                    type="button"
+                    className="primary-page-button"
+                    style={{ marginTop: "12px" }}
+                    onClick={() => {
+                      setSearchKeyword("");
+                      setSelectedCategoryFilter("Semua");
+                    }}
+                  >
+                    Reset Filter
+                  </button>
+                </div>
+              ) : (
+                <div className="product-grid">
+                  {displayedProducts.map((product) => (
+                    <ProductCard
+                      key={product.id || `${product.name}-${product.image}`}
+                      product={product}
+                      onClick={handleProductClick}
+                    />
+                  ))}
+                </div>
+              )}
             </section>
           )}
 
           {/* ================= KELOLA PRODUK (CRUD NESTJS) ================= */}
-          {activePage === "kelola-produk" && !selectedProduct && (
+          {activePage === "kelola-produk" && !selectedProduct && !showLogin && (
             <ProductManagement
               products={productsList}
               onRefresh={fetchProducts}
@@ -257,7 +402,7 @@ function App() {
               <div className="product-detail-card">
                 <div className="product-detail-image">
                   <img
-                    src={selectedProduct.image}
+                    src={selectedProduct.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop"}
                     alt={selectedProduct.name}
                   />
                 </div>
@@ -279,107 +424,140 @@ function App() {
                       "Produk pilihan Storeku dengan kualitas terbaik dan cocok untuk kebutuhan sehari-hari."}
                   </p>
 
-                  <button
-                    type="button"
-                    className="primary-page-button"
-                    onClick={() => handlePageChange("pemesanan")}
-                  >
-                    Pesan Produk
-                  </button>
+                  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                    <button
+                      type="button"
+                      className="primary-page-button"
+                      onClick={() => handleOrderProduct(selectedProduct)}
+                    >
+                      Pesan Produk Sekarang
+                    </button>
+                  </div>
                 </div>
               </div>
             </section>
           )}
 
           {/* ================= PROMO ================= */}
-          {activePage === "promo" &&
-            !selectedProduct &&
-            !showLogin && (
-              <section className="page-section">
-                <div className="page-header">
-                  <span className="section-kicker">STOREKU</span>
-                  <h1>Promo</h1>
-                  <p>
-                    Nikmati berbagai penawaran menarik dengan harga
-                    spesial dari Storeku.
-                  </p>
-                </div>
+          {activePage === "promo" && !selectedProduct && !showLogin && (
+            <section className="page-section">
+              <div className="page-header">
+                <span className="section-kicker">STOREKU PROMOSI</span>
+                <h1>Promo Spesial</h1>
+                <p>
+                  Nikmati berbagai penawaran menarik dengan diskon spesial dari Storeku.
+                </p>
+              </div>
 
-                <PromoSection />
+              <PromoSection onShopClick={() => handlePageChange("produk")} />
 
-                <div className="promo-product-grid">
-                  {promoProducts.map((product) => (
-                    <article
-                      key={product.name}
-                      className="promo-product-card"
-                    >
-                      <div className="promo-image-wrapper">
-                        <img
-                          src={product.image}
-                          alt={product.name}
-                        />
-                        <span className="promo-badge">
-                          -{product.discount}
-                        </span>
-                      </div>
+              <div className="promo-product-grid">
+                {promoProducts.map((product) => (
+                  <article
+                    key={product.name}
+                    className="promo-product-card"
+                  >
+                    <div className="promo-image-wrapper">
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                      />
+                      <span className="promo-badge">
+                        -{product.discount}
+                      </span>
+                    </div>
 
-                      <div className="promo-product-info">
-                        <span className="promo-category">
-                          {product.category}
-                        </span>
+                    <div className="promo-product-info">
+                      <span className="promo-category">
+                        {product.category}
+                      </span>
 
-                        <h3>{product.name}</h3>
+                      <h3>{product.name}</h3>
 
-                        <span className="promo-old-price">
-                          {product.oldPrice}
-                        </span>
+                      <span className="promo-old-price">
+                        {product.oldPrice}
+                      </span>
 
-                        <strong className="promo-price">
-                          {product.price}
-                        </strong>
+                      <strong className="promo-price">
+                        {product.price}
+                      </strong>
 
-                        <button
-                          type="button"
-                          className="promo-detail-button"
-                          onClick={() => handleProductClick(product)}
-                        >
-                          Lihat Produk
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            )}
+                      <button
+                        type="button"
+                        className="promo-detail-button"
+                        onClick={() => handleProductClick(product)}
+                      >
+                        Lihat Detail Produk
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* ================= PEMESANAN ================= */}
           {activePage === "pemesanan" && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">STOREKU</span>
-                <h1>Pemesanan</h1>
+                <span className="section-kicker">STATUS BELANJA</span>
+                <h1>Pemesanan Saya</h1>
                 <p>
-                  Kelola dan lihat pesanan yang kamu lakukan di
-                  Storeku.
+                  Daftar transaksi dan pesanan yang sedang kamu lakukan di Storeku.
                 </p>
               </div>
 
-              <div className="order-empty">
-                <div className="order-empty-icon">🛍️</div>
-                <h2>Belum Ada Pesanan</h2>
-                <p>
-                  Kamu belum memiliki pesanan. Yuk, pilih produk
-                  yang kamu suka!
-                </p>
+              {orders.length === 0 ? (
+                <div className="order-empty">
+                  <div className="order-empty-icon">🛍️</div>
+                  <h2>Belum Ada Pesanan</h2>
+                  <p>
+                    Kamu belum memiliki pesanan aktif. Yuk, pilih produk yang kamu suka!
+                  </p>
+                  <button
+                    type="button"
+                    className="primary-page-button"
+                    onClick={() => handlePageChange("produk")}
+                  >
+                    Mulai Belanja
+                  </button>
+                </div>
+              ) : (
+                <div className="order-list">
+                  {orders.map((order) => {
+                    const formattedOrderPrice = typeof order.price === "number"
+                      ? `Rp ${order.price.toLocaleString("id-ID")}`
+                      : order.price;
 
-                <button
-                  type="button"
-                  className="primary-page-button"
-                  onClick={() => handlePageChange("produk")}
-                >
-                  Mulai Belanja
-                </button>
-              </div>
+                    return (
+                      <div className="order-item-card" key={order.id}>
+                        <img
+                          src={order.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop"}
+                          alt={order.productName}
+                          className="order-thumb"
+                        />
+                        <div className="order-details">
+                          <h3>{order.productName}</h3>
+                          <p>{formattedOrderPrice}</p>
+                          <small style={{ color: "#6b7280" }}>Tanggal pesan: {order.date}</small>
+                        </div>
+                        <span className="order-status-badge">
+                          ● {order.status}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  <div style={{ marginTop: "20px", textAlign: "right" }}>
+                    <button
+                      type="button"
+                      className="primary-page-button"
+                      onClick={() => handlePageChange("produk")}
+                    >
+                      + Tambah Pesanan Lain
+                    </button>
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
@@ -387,10 +565,10 @@ function App() {
           {activePage === "akun" && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">STOREKU</span>
-                <h1>Akun</h1>
+                <span className="section-kicker">PROFIL PENGGUNA</span>
+                <h1>Akun Saya</h1>
                 <p>
-                  Kelola informasi akun dan preferensi kamu.
+                  Kelola informasi akun dan preferensi belanja kamu.
                 </p>
               </div>
 
@@ -399,19 +577,36 @@ function App() {
 
                 <div className="account-info">
                   <span>AKUN STOREKU</span>
-                  <h2>Selamat Datang!</h2>
-                  <p>
-                    Silakan masuk untuk mengelola akun, pesanan,
-                    dan informasi pribadi kamu.
-                  </p>
-
-                  <button
-                    type="button"
-                    className="primary-page-button"
-                    onClick={() => setShowLogin(true)}
-                  >
-                    Masuk / Login
-                  </button>
+                  {currentUser ? (
+                    <>
+                      <h2>Halo, {currentUser.name}!</h2>
+                      <p>
+                        Email: <strong>{currentUser.email}</strong> • Status: <span style={{ color: "#16a34a", fontWeight: "600" }}>Aktif</span>
+                      </p>
+                      <button
+                        type="button"
+                        className="primary-page-button"
+                        style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
+                        onClick={handleLogout}
+                      >
+                        Keluar / Logout
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <h2>Selamat Datang!</h2>
+                      <p>
+                        Silakan masuk untuk mengelola akun, melihat riwayat pesanan, dan informasi profil kamu.
+                      </p>
+                      <button
+                        type="button"
+                        className="primary-page-button"
+                        onClick={() => setShowLogin(true)}
+                      >
+                        Masuk / Login
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
@@ -419,16 +614,12 @@ function App() {
                 <button
                   type="button"
                   className="account-menu-item"
-                  onClick={() =>
-                    handlePageChange("informasi-akun")
-                  }
+                  onClick={() => handlePageChange("informasi-akun")}
                 >
                   <span className="account-menu-icon">👤</span>
                   <span className="account-menu-text">
                     <strong>Informasi Akun</strong>
-                    <small>
-                      Lihat informasi dan detail akun kamu.
-                    </small>
+                    <small>Lihat detail data akun yang sedang digunakan.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -441,9 +632,7 @@ function App() {
                   <span className="account-menu-icon">🛍️</span>
                   <span className="account-menu-text">
                     <strong>Pesanan Saya</strong>
-                    <small>
-                      Lihat status dan riwayat pesanan kamu.
-                    </small>
+                    <small>Lihat riwayat {orders.length} pesanan belanja kamu.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -456,9 +645,7 @@ function App() {
                   <span className="account-menu-icon">⚙️</span>
                   <span className="account-menu-text">
                     <strong>Pengaturan</strong>
-                    <small>
-                      Atur preferensi tampilan dan notifikasi.
-                    </small>
+                    <small>Atur preferensi tampilan dan notifikasi promo.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -478,10 +665,10 @@ function App() {
               </button>
 
               <div className="page-header">
-                <span className="section-kicker">AKUN STOREKU</span>
+                <span className="section-kicker">DETAIL PENGGUNA</span>
                 <h1>Informasi Akun</h1>
                 <p>
-                  Informasi dasar akun yang digunakan di Storeku.
+                  Informasi profil pengguna Storeku yang sedang aktif.
                 </p>
               </div>
 
@@ -491,38 +678,47 @@ function App() {
                 <div className="account-detail-content">
                   <div className="account-detail-row">
                     <span>Nama</span>
-                    <strong>Pengguna Storeku</strong>
+                    <strong>{currentUser ? currentUser.name : "Tamu / Pengguna Storeku"}</strong>
                   </div>
 
                   <div className="account-detail-row">
                     <span>Email</span>
-                    <strong>Belum ditambahkan</strong>
+                    <strong>{currentUser ? currentUser.email : "Belum login"}</strong>
                   </div>
 
                   <div className="account-detail-row">
                     <span>Nomor Telepon</span>
-                    <strong>Belum ditambahkan</strong>
+                    <strong>{currentUser ? currentUser.phone : "Belum ditambahkan"}</strong>
                   </div>
 
                   <div className="account-detail-row">
-                    <span>Status Akun</span>
-                    <strong>Belum login</strong>
+                    <span>Status Autentikasi</span>
+                    <strong style={{ color: currentUser ? "#16a34a" : "#dc2626" }}>
+                      {currentUser ? "Sudah Login (Terautentikasi)" : "Belum Login"}
+                    </strong>
                   </div>
                 </div>
               </div>
 
-              <p className="account-note">
-                Informasi ini masih berupa tampilan contoh. Data
-                akun belum tersimpan ke database.
-              </p>
-
-              <button
-                type="button"
-                className="primary-page-button"
-                onClick={() => setShowLogin(true)}
-              >
-                Masuk ke Akun
-              </button>
+              {currentUser ? (
+                <button
+                  type="button"
+                  className="primary-page-button"
+                  style={{ backgroundColor: "#ef4444", borderColor: "#ef4444", marginTop: "16px" }}
+                  onClick={handleLogout}
+                >
+                  Keluar dari Akun
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="primary-page-button"
+                  style={{ marginTop: "16px" }}
+                  onClick={() => setShowLogin(true)}
+                >
+                  Masuk ke Akun Sekarang
+                </button>
+              )}
             </section>
           )}
 
@@ -538,10 +734,10 @@ function App() {
               </button>
 
               <div className="page-header">
-                <span className="section-kicker">AKUN STOREKU</span>
+                <span className="section-kicker">PREFERENSI</span>
                 <h1>Pengaturan</h1>
                 <p>
-                  Sesuaikan preferensi penggunaan Storeku.
+                  Sesuaikan preferensi tampilan dan notifikasi Storeku.
                 </p>
               </div>
 
@@ -550,7 +746,7 @@ function App() {
                   <div>
                     <strong>Notifikasi Promo</strong>
                     <small>
-                      Izinkan tampilan notifikasi penawaran dan promo.
+                      Izinkan notifikasi penawaran spesial dan diskon.
                     </small>
                   </div>
 
@@ -564,7 +760,7 @@ function App() {
                   <div>
                     <strong>Pengingat Pesanan</strong>
                     <small>
-                      Aktifkan pengingat untuk informasi pesanan.
+                      Dapatkan status pembaruan transaksi pesanan kamu.
                     </small>
                   </div>
 
@@ -576,9 +772,9 @@ function App() {
 
                 <div className="settings-item">
                   <div>
-                    <strong>Bahasa</strong>
+                    <strong>Bahasa Tampilan</strong>
                     <small>
-                      Pilih bahasa yang digunakan pada tampilan.
+                      Pilih bahasa aplikasi Storeku.
                     </small>
                   </div>
 
@@ -588,76 +784,15 @@ function App() {
                   </select>
                 </div>
               </div>
-
-              <p className="account-note">
-                Pengaturan ini masih berlaku pada tampilan halaman
-                dan belum disimpan secara permanen.
-              </p>
             </section>
           )}
 
-          {/* ================= LOGIN ================= */}
+          {/* ================= MODAL / HALAMAN LOGIN ================= */}
           {showLogin && (
-            <section className="login-page">
-              <div className="login-card">
-                <div className="login-header">
-                  <span className="section-kicker">STOREKU</span>
-                  <h1>Masuk ke Akun</h1>
-                  <p>
-                    Masuk untuk mengelola akun dan pesanan kamu.
-                  </p>
-                </div>
-
-                <form
-                  className="login-form"
-                  onSubmit={(e) => {
-                    e.preventDefault();
-                    alert(
-                      "Form login ini belum terhubung ke sistem autentikasi."
-                    );
-                  }}
-                >
-                  <div className="form-group">
-                    <label htmlFor="email">Email</label>
-                    <input
-                      id="email"
-                      name="email"
-                      type="email"
-                      placeholder="Masukkan email"
-                      autoComplete="email"
-                      required
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label htmlFor="password">Password</label>
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      placeholder="Masukkan password"
-                      autoComplete="current-password"
-                      required
-                    />
-                  </div>
-
-                  <button
-                    type="submit"
-                    className="primary-page-button"
-                  >
-                    Masuk / Login
-                  </button>
-                </form>
-
-                <button
-                  type="button"
-                  className="back-button"
-                  onClick={() => setShowLogin(false)}
-                >
-                  ← Kembali ke Akun
-                </button>
-              </div>
-            </section>
+            <LoginForm
+              onBack={() => setShowLogin(false)}
+              onLoginSuccess={handleLoginSuccess}
+            />
           )}
 
           <footer className="store-footer">

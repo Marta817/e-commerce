@@ -1,6 +1,17 @@
-function CategoryCard({ icon, name, description }) {
+function CategoryCard({ icon, name, description, onClick }) {
   return (
-    <a href="#products" className="category-card">
+    <div
+      className="category-card"
+      onClick={() => onClick && onClick(name)}
+      role="button"
+      tabIndex={0}
+      style={{ cursor: "pointer" }}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          onClick && onClick(name);
+        }
+      }}
+    >
       <div className="category-icon">{icon}</div>
 
       <div className="category-content">
@@ -9,7 +20,7 @@ function CategoryCard({ icon, name, description }) {
       </div>
 
       <span className="category-arrow">→</span>
-    </a>
+    </div>
   );
 }
 

@@ -1,4 +1,4 @@
-function PromoSection() {
+function PromoSection({ onShopClick }) {
   return (
     <section className="promo-section">
       <div className="promo-content">
@@ -15,10 +15,15 @@ function PromoSection() {
           melengkapi kebutuhan fashion dan lifestyle kamu.
         </p>
 
-        <a href="#products" className="promo-button">
+        <button
+          type="button"
+          onClick={onShopClick}
+          className="promo-button"
+          style={{ cursor: "pointer", border: "none" }}
+        >
           Belanja Sekarang
           <span>→</span>
-        </a>
+        </button>
       </div>
 
       <div className="promo-decoration">

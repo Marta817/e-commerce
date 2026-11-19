@@ -1,4 +1,4 @@
-function Hero() {
+function Hero({ onExploreClick }) {
   return (
     <section className="hero">
       <div className="hero-content">
@@ -17,10 +17,15 @@ function Hero() {
           kebutuhan sehari-harimu.
         </p>
 
-        <a href="#products" className="hero-button">
+        <button
+          type="button"
+          onClick={onExploreClick}
+          className="hero-button"
+          style={{ cursor: "pointer", border: "none" }}
+        >
           Lihat Produk
           <span>→</span>
-        </a>
+        </button>
 
         <div className="hero-note">
           <span>✓</span>
