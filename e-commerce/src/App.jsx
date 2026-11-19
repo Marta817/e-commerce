@@ -330,8 +330,6 @@ function App() {
           activePage={activePage}
           onPageChange={handlePageChange}
           t={t}
-          language={language}
-          onLanguageChange={handleLanguageChange}
           onOpenHelp={() => setShowHelpModal(true)}
         />
 

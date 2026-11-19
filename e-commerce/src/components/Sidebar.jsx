@@ -6,7 +6,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-function Sidebar({ activePage, onPageChange, t, language, onLanguageChange, onOpenHelp }) {
+function Sidebar({ activePage, onPageChange, t, onOpenHelp }) {
   const menuItems = [
     {
       icon: House,
@@ -65,30 +65,6 @@ function Sidebar({ activePage, onPageChange, t, language, onLanguageChange, onOp
       </nav>
 
       <div className="sidebar-bottom">
-        <div style={{ marginBottom: "14px", padding: "0 2px" }}>
-          <label style={{ display: "block", fontSize: "11px", fontWeight: "700", color: "#64748b", textTransform: "uppercase", marginBottom: "6px", letterSpacing: "0.5px" }}>
-            {t?.displayLanguageTitle || "Bahasa"}
-          </label>
-          <select
-            value={language}
-            onChange={(e) => onLanguageChange && onLanguageChange(e.target.value)}
-            style={{
-              width: "100%",
-              padding: "7px 10px",
-              borderRadius: "8px",
-              border: "1px solid #cbd5e1",
-              fontSize: "13px",
-              fontWeight: "600",
-              backgroundColor: "#ffffff",
-              color: "#1e293b",
-              cursor: "pointer",
-            }}
-          >
-            <option value="id">Indonesia</option>
-            <option value="en">English</option>
-          </select>
-        </div>
-
         <button
           type="button"
           className="sidebar-help"
