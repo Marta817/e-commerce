@@ -1,14 +1,14 @@
 import {
   House,
   ShoppingBag,
-  Package,
+  ShieldCheck,
   Tag,
   ClipboardList,
   UserRound,
 } from "lucide-react";
 
 function Sidebar({ activePage, onPageChange }) {
-  const menuItems = [
+  const buyerMenu = [
     {
       icon: House,
       label: "Beranda",
@@ -18,11 +18,6 @@ function Sidebar({ activePage, onPageChange }) {
       icon: ShoppingBag,
       label: "Produk",
       page: "produk",
-    },
-    {
-      icon: Package,
-      label: "Kelola Produk",
-      page: "kelola-produk",
     },
     {
       icon: Tag,
@@ -41,16 +36,23 @@ function Sidebar({ activePage, onPageChange }) {
     },
   ];
 
+  const adminMenu = [
+    {
+      icon: ShieldCheck,
+      label: "Kelola Produk (Admin)",
+      page: "kelola-produk",
+    },
+  ];
+
   return (
     <aside className="sidebar">
       <div className="sidebar-heading">
-        MENU STOREKU
+        MENU PEMBELI
       </div>
 
       <nav className="sidebar-menu">
-        {menuItems.map((item) => {
+        {buyerMenu.map((item) => {
           const Icon = item.icon;
-
           return (
             <button
               key={item.page}
@@ -65,7 +67,34 @@ function Sidebar({ activePage, onPageChange }) {
                 size={19}
                 strokeWidth={2}
               />
+              <span>{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
 
+      <div className="sidebar-heading" style={{ marginTop: "24px" }}>
+        PANEL ADMIN (SELLER)
+      </div>
+
+      <nav className="sidebar-menu">
+        {adminMenu.map((item) => {
+          const Icon = item.icon;
+          return (
+            <button
+              key={item.page}
+              type="button"
+              className={`sidebar-link ${
+                activePage === item.page ? "active" : ""
+              }`}
+              onClick={() => onPageChange(item.page)}
+              style={activePage === item.page ? {} : { color: "#4f46e5" }}
+            >
+              <Icon
+                className="sidebar-icon"
+                size={19}
+                strokeWidth={2}
+              />
               <span>{item.label}</span>
             </button>
           );

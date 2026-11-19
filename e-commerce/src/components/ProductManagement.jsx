@@ -181,10 +181,10 @@ export default function ProductManagement({
       <div className="page-header" style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "16px" }}>
           <div>
-            <span className="section-kicker">BACKEND NESTJS INTEGRATION</span>
-            <h1>Kelola Produk (CRUD)</h1>
+            <span className="section-kicker">PANEL ADMIN TOKO • BACKEND NESTJS</span>
+            <h1>Kelola Produk (Admin CRUD)</h1>
             <p>
-              Operasi Tambah, Ubah, dan Hapus data produk yang tersinkronisasi langsung dengan backend NestJS.
+              Halaman khusus pengelola toko / admin untuk mengelola katalog (Tambah, Ubah, dan Hapus data produk yang tersinkronisasi ke backend NestJS).
             </p>
           </div>
 

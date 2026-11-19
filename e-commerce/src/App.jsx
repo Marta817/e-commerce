@@ -318,10 +318,11 @@ function App() {
                   <button
                     type="button"
                     className="primary-page-button"
-                    style={{ padding: "6px 14px", fontSize: "13px" }}
+                    style={{ padding: "6px 14px", fontSize: "13px", backgroundColor: "#4f46e5", borderColor: "#4f46e5" }}
                     onClick={() => handlePageChange("kelola-produk")}
+                    title="Buka panel admin toko untuk menambah, mengedit, atau menghapus produk"
                   >
-                    + Kelola Produk (CRUD)
+                    ⚙️ Panel Admin (CRUD Produk)
                   </button>
 
                   <select
