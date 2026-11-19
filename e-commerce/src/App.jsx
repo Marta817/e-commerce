@@ -327,6 +327,8 @@ function App() {
           activePage={activePage}
           onPageChange={handlePageChange}
           t={t}
+          language={language}
+          onLanguageChange={handleLanguageChange}
         />
 
         <main className="main-content">
@@ -1035,8 +1037,8 @@ function App() {
                       cursor: "pointer",
                     }}
                   >
-                    <option value="id">🇮🇩 Bahasa Indonesia</option>
-                    <option value="en">🇬🇧 English</option>
+                    <option value="id">Indonesia</option>
+                    <option value="en">English</option>
                   </select>
                 </div>
               </div>
