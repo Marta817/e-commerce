@@ -98,8 +98,8 @@ Content-Type: application/json
 ###
 
 ### 9. DELETE ORDER (SUCCESS - 200 OK)
-# User membatalkan pesanan ID 2 (200 OK)
-DELETE {{baseUrl}}/orders/2
+# User membatalkan pesanan ID 3 (200 OK)
+DELETE {{baseUrl}}/orders/3
 Accept: application/json
 
 ###

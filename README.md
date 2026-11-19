@@ -160,8 +160,8 @@ Screenshot pengujian disimpan di folder `docs/screenshots/`:
 - **Modal Form Pemesanan Baru (POST)**  
   ![Frontend Tambah Pesanan](docs/screenshots/10-frontend-pesan-produk.png)
 
-- **Modal Form Ubah Alamat Pesanan (PATCH)**  
-  ![Frontend Ubah Alamat](docs/screenshots/11-frontend-ubah-alamat.png)
+- **Pengaturan Identitas & Alamat Akun Pembeli**  
+  ![Frontend Informasi Akun](docs/screenshots/11-frontend-ubah-alamat.png)
 
 - **Konfirmasi Batalkan Pesanan (DELETE)**  
   ![Frontend Batalkan Pesanan](docs/screenshots/12-frontend-batalkan-pesanan.png)

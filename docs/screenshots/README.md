@@ -49,7 +49,7 @@ User memperbarui alamat pengiriman dan catatan pada pesanannya (`PATCH /orders/1
 ---
 
 ### 8. DELETE Batalkan Pesanan (200 OK)
-User membatalkan pesanannya (`DELETE /orders/2`).
+User membatalkan pesanannya (`DELETE /orders/3`).
 ![08 - DELETE Success](08-delete-success.png)
 
 ---
@@ -68,9 +68,9 @@ Form pemesanan saat user mengklik "Beli Sekarang" dari katalog produk (`POST /or
 
 ---
 
-### 11. Form Ubah Alamat / Catatan Pesanan
-Modal interaktif untuk memperbarui alamat pengiriman (`PATCH /orders/:id`).
-![11 - Frontend Ubah Alamat](11-frontend-ubah-alamat.png)
+### 11. Pengaturan Identitas & Alamat Pengiriman Akun
+Halaman pengaturan profil pembeli untuk menyimpan nama lengkap, nomor HP, dan alamat pengiriman default sebelum memesan produk.
+![11 - Frontend Informasi Akun](11-frontend-ubah-alamat.png)
 
 ---
 
