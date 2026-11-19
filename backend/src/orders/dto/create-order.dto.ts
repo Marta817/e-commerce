@@ -48,3 +48,4 @@ export class CreateOrderDto {
   @IsString({ message: 'URL gambar harus berupa teks' })
   image?: string;
 }
+

@@ -47,18 +47,37 @@ const promoProducts = [
   },
 ];
 
+const CATEGORIES_LIST = ["Pakaian", "Outerwear", "Sepatu", "Tas", "Aksesori"];
+
 function App() {
   const [activePage, setActivePage] = useState("beranda");
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [productsList, setProductsList] = useState(products);
 
+  // Modal Tambah Produk Baru (POST /products)
+  const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductPrice, setNewProductPrice] = useState("");
+  const [newProductCategory, setNewProductCategory] = useState("Pakaian");
+  const [newProductStock, setNewProductStock] = useState("");
+  const [newProductDesc, setNewProductDesc] = useState("");
+  const [newProductImage, setNewProductImage] = useState("");
+  const [productFormError, setProductFormError] = useState("");
+  const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
+
+  // Modal Edit Produk (PATCH /products/:id)
+  const [showEditProductModal, setShowEditProductModal] = useState(false);
+  const [editPrice, setEditPrice] = useState("");
+  const [editStock, setEditStock] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+
   // Orders State (Backend NestJS /orders)
   const [ordersList, setOrdersList] = useState([]);
   const [isOrdersConnected, setIsOrdersConnected] = useState(false);
   const [isLoadingOrders, setIsLoadingOrders] = useState(false);
 
-  // Modal Order Checkout
+  // Modal Order Checkout (POST /orders)
   const [showOrderModal, setShowOrderModal] = useState(false);
   const [orderQuantity, setOrderQuantity] = useState(1);
   const [orderAddress, setOrderAddress] = useState("");
@@ -122,12 +141,16 @@ function App() {
     setSelectedProduct(null);
     setShowLogin(false);
     setShowOrderModal(false);
+    setShowAddProductModal(false);
+    setShowEditProductModal(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
     setShowOrderModal(false);
+    setShowAddProductModal(false);
+    setShowEditProductModal(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -156,6 +179,120 @@ function App() {
     }
   };
 
+  // ================= CRUD PRODUK =================
+  const handleOpenAddProduct = () => {
+    setNewProductName("");
+    setNewProductPrice("");
+    setNewProductCategory("Pakaian");
+    setNewProductStock("20");
+    setNewProductDesc("");
+    setNewProductImage("");
+    setProductFormError("");
+    setShowAddProductModal(true);
+  };
+
+  const handleCreateProduct = async (e) => {
+    e.preventDefault();
+    setProductFormError("");
+    setIsSubmittingProduct(true);
+
+    const payload = {
+      name: newProductName.trim(),
+      price: Number(newProductPrice),
+      category: newProductCategory,
+      stock: Number(newProductStock),
+      description: newProductDesc.trim() || undefined,
+      image: newProductImage.trim() || undefined,
+      isAvailable: Number(newProductStock) > 0,
+    };
+
+    try {
+      const res = await fetch("http://localhost:3000/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        setProductFormError(
+          Array.isArray(data.message) ? data.message.join(", ") : data.message || "Gagal menambah produk."
+        );
+        setIsSubmittingProduct(false);
+        return;
+      }
+
+      alert(`Produk "${data.name}" berhasil ditambahkan ke katalog!`);
+      setShowAddProductModal(false);
+      await fetchProducts();
+    } catch (err) {
+      setProductFormError("Gagal terhubung ke backend NestJS.");
+    } finally {
+      setIsSubmittingProduct(false);
+    }
+  };
+
+  const handleOpenEditProduct = () => {
+    if (!selectedProduct) return;
+    setEditPrice(selectedProduct.price || "");
+    setEditStock(selectedProduct.stock !== undefined ? selectedProduct.stock : 20);
+    setEditDesc(selectedProduct.description || "");
+    setShowEditProductModal(true);
+  };
+
+  const handleUpdateProduct = async (e) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/products/${selectedProduct.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          price: Number(editPrice),
+          stock: Number(editStock),
+          description: editDesc.trim(),
+        }),
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(`Produk "${data.name}" berhasil diperbarui!`);
+        setSelectedProduct(data);
+        setShowEditProductModal(false);
+        await fetchProducts();
+      } else {
+        alert(data.message || "Gagal mengedit produk.");
+      }
+    } catch {
+      alert("Gagal terhubung ke backend NestJS.");
+    }
+  };
+
+  const handleDeleteProduct = async () => {
+    if (!selectedProduct) return;
+    const confirmDelete = window.confirm(`Apakah Anda yakin ingin menghapus produk "${selectedProduct.name}" dari katalog?`);
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(`http://localhost:3000/products/${selectedProduct.id}`, {
+        method: "DELETE",
+      });
+      const data = await res.json();
+
+      if (res.ok) {
+        alert(data.message || "Produk berhasil dihapus!");
+        setSelectedProduct(null);
+        await fetchProducts();
+      } else {
+        alert(data.message || "Gagal menghapus produk.");
+      }
+    } catch {
+      alert("Gagal terhubung ke backend NestJS.");
+    }
+  };
+
+  // ================= ORDER FLOW =================
   const handleOpenOrderModal = (product) => {
     setSelectedProduct(product);
     setOrderQuantity(1);
@@ -336,14 +473,14 @@ function App() {
               </>
             )}
 
-          {/* ================= PRODUK ================= */}
+          {/* ================= PRODUK (KATALOG PRODUK) ================= */}
           {activePage === "produk" && !selectedProduct && !showLogin && (
             <section className="page-section">
               <div className="page-header">
                 <span className="section-kicker">STOREKU KATALOG</span>
-                <h1>Produk</h1>
+                <h1>Katalog Produk</h1>
                 <p>
-                  Temukan berbagai produk fashion dan lifestyle pilihan Storeku.
+                  Temukan berbagai produk fashion pilihan Storeku. Kamu juga bisa menambahkan produk baru ke katalog.
                 </p>
               </div>
 
@@ -369,17 +506,25 @@ function App() {
                 </div>
 
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
+                  {/* Tombol Tambah Produk (Sesuai Syarat Pekan 2 & 3) */}
+                  <button
+                    type="button"
+                    className="primary-page-button"
+                    style={{ padding: "6px 14px", fontSize: "13px" }}
+                    onClick={handleOpenAddProduct}
+                  >
+                    + Tambah Produk
+                  </button>
+
                   <select
                     value={selectedCategoryFilter}
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
                     style={{ padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid #d1d5db" }}
                   >
                     <option value="Semua">Semua Kategori</option>
-                    <option value="Pakaian">Pakaian</option>
-                    <option value="Outerwear">Outerwear</option>
-                    <option value="Sepatu">Sepatu</option>
-                    <option value="Tas">Tas</option>
-                    <option value="Aksesori">Aksesori</option>
+                    {CATEGORIES_LIST.map((cat) => (
+                      <option key={cat} value={cat}>{cat}</option>
+                    ))}
                   </select>
 
                   <select
@@ -394,19 +539,17 @@ function App() {
                 </div>
               </div>
 
+              {/* Conditional Rendering sesuai instruksi Pekan 2: Belum ada data Produk */}
               {displayedProducts.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", color: "#6b7280" }}>
-                  <p style={{ fontSize: "18px", fontWeight: "600" }}>Tidak ada produk yang cocok dengan pencarian.</p>
+                  <p style={{ fontSize: "18px", fontWeight: "600" }}>Belum ada data Produk.</p>
                   <button
                     type="button"
                     className="primary-page-button"
                     style={{ marginTop: "12px" }}
-                    onClick={() => {
-                      setSearchKeyword("");
-                      setSelectedCategoryFilter("Semua");
-                    }}
+                    onClick={handleOpenAddProduct}
                   >
-                    Reset Filter
+                    + Tambah Produk Pertama
                   </button>
                 </div>
               ) : (
@@ -423,7 +566,161 @@ function App() {
             </section>
           )}
 
-          {/* ================= DETAIL PRODUK ================= */}
+          {/* ================= MODAL TAMBAH PRODUK BARU ================= */}
+          {showAddProductModal && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+                padding: "16px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: "14px",
+                  padding: "24px",
+                  maxWidth: "480px",
+                  width: "100%",
+                  boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h2 style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>
+                    Tambah Produk Baru ke Katalog
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowAddProductModal(false)}
+                    style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#6b7280" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {productFormError && (
+                  <div style={{ padding: "10px", borderRadius: "6px", backgroundColor: "#fef2f2", color: "#991b1b", fontSize: "13px", marginBottom: "12px" }}>
+                    • {productFormError}
+                  </div>
+                )}
+
+                <form onSubmit={handleCreateProduct}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Nama Produk <span style={{ color: "red" }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Kemeja Flanel Casual"
+                      value={newProductName}
+                      onChange={(e) => setNewProductName(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "12px" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                        Harga (Rp) <span style={{ color: "red" }}>*</span>
+                      </label>
+                      <input
+                        type="number"
+                        min={1000}
+                        required
+                        placeholder="Contoh: 150000"
+                        value={newProductPrice}
+                        onChange={(e) => setNewProductPrice(e.target.value)}
+                        style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                      />
+                    </div>
+
+                    <div>
+                      <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                        Kategori <span style={{ color: "red" }}>*</span>
+                      </label>
+                      <select
+                        value={newProductCategory}
+                        onChange={(e) => setNewProductCategory(e.target.value)}
+                        style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                      >
+                        {CATEGORIES_LIST.map((c) => (
+                          <option key={c} value={c}>{c}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Jumlah Stok
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={newProductStock}
+                      onChange={(e) => setNewProductStock(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      URL Foto Produk (Opsional)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://..."
+                      value={newProductImage}
+                      onChange={(e) => setNewProductImage(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "18px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Deskripsi Produk (Opsional)
+                    </label>
+                    <textarea
+                      rows={2}
+                      placeholder="Keterangan singkat produk..."
+                      value={newProductDesc}
+                      onChange={(e) => setNewProductDesc(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowAddProductModal(false)}
+                      style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer" }}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingProduct}
+                      className="primary-page-button"
+                      style={{ padding: "8px 20px" }}
+                    >
+                      {isSubmittingProduct ? "Menyimpan..." : "Tambah ke Katalog"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
+
+          {/* ================= DETAIL PRODUK (DENGAN AKSI EDIT, HAPUS, PESAN) ================= */}
           {selectedProduct && (
             <section className="product-detail-page">
               <button
@@ -459,7 +756,7 @@ function App() {
                       "Produk pilihan Storeku dengan kualitas terbaik dan cocok untuk kebutuhan sehari-hari."}
                   </p>
 
-                  <div style={{ display: "flex", gap: "10px", marginTop: "10px" }}>
+                  <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", marginTop: "14px" }}>
                     <button
                       type="button"
                       className="primary-page-button"
@@ -467,10 +764,142 @@ function App() {
                     >
                       Pesan Produk Sekarang
                     </button>
+
+                    <button
+                      type="button"
+                      onClick={handleOpenEditProduct}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        backgroundColor: "#f9fafb",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
+                    >
+                      ✏️ Edit Produk
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleDeleteProduct}
+                      style={{
+                        padding: "8px 16px",
+                        borderRadius: "8px",
+                        border: "1px solid #fecaca",
+                        backgroundColor: "#fef2f2",
+                        color: "#dc2626",
+                        fontWeight: "600",
+                        cursor: "pointer",
+                      }}
+                    >
+                      🗑️ Hapus Produk
+                    </button>
                   </div>
                 </div>
               </div>
             </section>
+          )}
+
+          {/* ================= MODAL EDIT PRODUK ================= */}
+          {showEditProductModal && selectedProduct && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+                padding: "16px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: "14px",
+                  padding: "24px",
+                  maxWidth: "460px",
+                  width: "100%",
+                  boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h2 style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>
+                    Edit Produk: {selectedProduct.name}
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowEditProductModal(false)}
+                    style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#6b7280" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <form onSubmit={handleUpdateProduct}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Harga Produk (Rp)
+                    </label>
+                    <input
+                      type="number"
+                      required
+                      min={1000}
+                      value={editPrice}
+                      onChange={(e) => setEditPrice(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Stok Barang
+                    </label>
+                    <input
+                      type="number"
+                      min={0}
+                      value={editStock}
+                      onChange={(e) => setEditStock(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "18px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Deskripsi Produk
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={editDesc}
+                      onChange={(e) => setEditDesc(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowEditProductModal(false)}
+                      style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer" }}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      className="primary-page-button"
+                      style={{ padding: "8px 20px" }}
+                    >
+                      Simpan Perubahan
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
 
           {/* ================= MODAL BUAT PESANAN BARU (POST) ================= */}
