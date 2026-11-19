@@ -1,36 +1,34 @@
-function BenefitSection() {
+function BenefitSection({ t }) {
   const benefits = [
     {
       icon: "🚚",
-      title: "Pengiriman Mudah",
-      description: "Pesanan diproses dengan cepat.",
+      title: t?.benefit1Title || "Pengiriman Mudah",
+      description: t?.benefit1Desc || "Pesanan diproses dengan cepat.",
     },
     {
       icon: "✓",
-      title: "Produk Pilihan",
-      description: "Pilihan produk untuk kebutuhanmu.",
+      title: t?.benefit2Title || "Produk Pilihan",
+      description: t?.benefit2Desc || "Pilihan produk untuk kebutuhanmu.",
     },
     {
       icon: "♡",
-      title: "Belanja Nyaman",
-      description: "Tampilan sederhana dan mudah digunakan.",
+      title: t?.benefit3Title || "Belanja Nyaman",
+      description: t?.benefit3Desc || "Tampilan sederhana dan mudah digunakan.",
     },
     {
       icon: "🔒",
-      title: "Aman & Terpercaya",
-      description: "Pengalaman belanja yang nyaman.",
+      title: t?.benefit4Title || "Aman & Terpercaya",
+      description: t?.benefit4Desc || "Pengalaman belanja yang nyaman.",
     },
   ];
 
   return (
     <section className="benefit-section">
       <div className="benefit-heading">
-        <span className="section-kicker">KENAPA STOREKU?</span>
+        <span className="section-kicker">{t?.whyStoreku || "KENAPA STOREKU?"}</span>
 
         <h2>
-          Belanja Lebih
-          <br />
-          Nyaman.
+          {t?.shopComfortably || "Belanja Lebih Nyaman."}
         </h2>
       </div>
 

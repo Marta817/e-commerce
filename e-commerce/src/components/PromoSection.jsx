@@ -1,18 +1,15 @@
-function PromoSection({ onShopClick }) {
+function PromoSection({ onShopClick, t }) {
   return (
     <section className="promo-section">
       <div className="promo-content">
-        <span className="promo-kicker">SPECIAL FOR YOU</span>
+        <span className="promo-kicker">{t?.promoBannerTag || "SPECIAL FOR YOU"}</span>
 
         <h2>
-          Lengkapi Gaya
-          <br />
-          Tanpa Ribet.
+          {t?.promoBannerTitle || "Diskon Belanja Hingga 30%"}
         </h2>
 
         <p>
-          Temukan berbagai pilihan produk Storeku untuk
-          melengkapi kebutuhan fashion dan lifestyle kamu.
+          {t?.promoBannerDesc || "Dapatkan produk fashion dan aksesoris terbaik dengan harga lebih hemat."}
         </p>
 
         <button
@@ -21,8 +18,7 @@ function PromoSection({ onShopClick }) {
           className="promo-button"
           style={{ cursor: "pointer", border: "none" }}
         >
-          Belanja Sekarang
-          <span>→</span>
+          {t?.promoBannerBtn || "Belanja Sekarang →"}
         </button>
       </div>
 

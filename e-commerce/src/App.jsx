@@ -10,6 +10,7 @@ import PromoSection from "./components/PromoSection";
 import BenefitSection from "./components/BenefitSection";
 import OrderManagement from "./components/OrderManagement";
 import LoginForm from "./components/LoginForm";
+import { translations } from "./utils/translations";
 
 import products from "./data/product";
 
@@ -72,6 +73,23 @@ function App() {
   const [searchKeyword, setSearchKeyword] = useState("");
   const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("Semua");
   const [sortBy, setSortBy] = useState("terbaru");
+
+  // Language State
+  const [language, setLanguage] = useState(() => {
+    try {
+      const saved = localStorage.getItem("storeku_lang");
+      return saved === "en" ? "en" : "id";
+    } catch {
+      return "id";
+    }
+  });
+
+  const t = translations[language] || translations.id;
+
+  const handleLanguageChange = (newLang) => {
+    setLanguage(newLang);
+    localStorage.setItem("storeku_lang", newLang);
+  };
 
   // Auth State
   const [currentUser, setCurrentUser] = useState(() => {
@@ -301,12 +319,14 @@ function App() {
         onLoginClick={() => setShowLogin(true)}
         onLogoutClick={handleLogout}
         onLogoClick={() => handlePageChange("beranda")}
+        t={t}
       />
 
       <div className="app-body">
         <Sidebar
           activePage={activePage}
           onPageChange={handlePageChange}
+          t={t}
         />
 
         <main className="main-content">
@@ -320,7 +340,7 @@ function App() {
                     <span>⌕</span>
                     <input
                       type="text"
-                      placeholder="Cari produk favoritmu (tekan Enter)..."
+                      placeholder={t.searchPlaceholder}
                       value={searchKeyword}
                       onChange={(e) => setSearchKeyword(e.target.value)}
                       onKeyDown={(e) => {
@@ -333,17 +353,17 @@ function App() {
 
                   <div className="top-bar-info">
                     <span>✨</span>
-                    <span>Belanja nyaman di Storeku</span>
+                    <span>{t.comfortableShopping}</span>
                   </div>
                 </section>
 
-                <Hero onExploreClick={() => handlePageChange("produk")} />
+                <Hero onExploreClick={() => handlePageChange("produk")} t={t} />
 
                 <section className="section-block">
                   <div className="section-heading">
                     <div>
-                      <span className="section-kicker">KATEGORI</span>
-                      <h2>Belanja Sesuai Kebutuhan</h2>
+                      <span className="section-kicker">{t.categoriesTitle}</span>
+                      <h2>{t.categoriesHeading}</h2>
                     </div>
                   </div>
 
@@ -362,9 +382,9 @@ function App() {
                   <div className="section-heading">
                     <div>
                       <span className="section-kicker">
-                        PRODUK PILIHAN
+                        {t.featuredTitle}
                       </span>
-                      <h2>Favorit Storeku</h2>
+                      <h2>{t.featuredHeading}</h2>
                     </div>
 
                     <button
@@ -372,7 +392,7 @@ function App() {
                       className="see-all-button"
                       onClick={() => handlePageChange("produk")}
                     >
-                      Lihat Semua →
+                      {t.seeAll}
                     </button>
                   </div>
 
@@ -387,8 +407,8 @@ function App() {
                   </div>
                 </section>
 
-                <PromoSection onShopClick={() => handlePageChange("promo")} />
-                <BenefitSection />
+                <PromoSection onShopClick={() => handlePageChange("promo")} t={t} />
+                <BenefitSection t={t} />
               </>
             )}
 
@@ -396,16 +416,14 @@ function App() {
           {activePage === "produk" && !selectedProduct && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">STOREKU KATALOG</span>
-                <h1>Katalog Produk</h1>
-                <p>
-                  Temukan berbagai produk fashion dan lifestyle pilihan Storeku.
-                </p>
+                <span className="section-kicker">{t.catalogKicker}</span>
+                <h1>{t.catalogTitle}</h1>
+                <p>{t.catalogDesc}</p>
               </div>
 
               <div className="product-toolbar" style={{ flexWrap: "wrap", gap: "12px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "12px", flexWrap: "wrap" }}>
-                  <span>Menampilkan <strong>{displayedProducts.length}</strong> produk</span>
+                  <span>{t.showing} <strong>{displayedProducts.length}</strong> {t.productsWord}</span>
                   {selectedCategoryFilter !== "Semua" && (
                     <button
                       type="button"
@@ -430,7 +448,7 @@ function App() {
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
                     style={{ padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid #d1d5db" }}
                   >
-                    <option value="Semua">Semua Kategori</option>
+                    <option value="Semua">{t.allCategories}</option>
                     {CATEGORIES_LIST.map((cat) => (
                       <option key={cat} value={cat}>{cat}</option>
                     ))}
@@ -441,16 +459,16 @@ function App() {
                     onChange={(e) => setSortBy(e.target.value)}
                     style={{ padding: "6px 10px", fontSize: "13px", borderRadius: "6px", border: "1px solid #d1d5db" }}
                   >
-                    <option value="terbaru">Produk Terbaru</option>
-                    <option value="termurah">Harga Terendah</option>
-                    <option value="termahal">Harga Tertinggi</option>
+                    <option value="terbaru">{t.sortNewest}</option>
+                    <option value="termurah">{t.sortCheapest}</option>
+                    <option value="termahal">{t.sortExpensive}</option>
                   </select>
                 </div>
               </div>
 
               {displayedProducts.length === 0 ? (
                 <div style={{ textAlign: "center", padding: "60px 20px", color: "#6b7280" }}>
-                  <p style={{ fontSize: "18px", fontWeight: "600" }}>Belum ada data Produk.</p>
+                  <p style={{ fontSize: "18px", fontWeight: "600" }}>{t.noProducts}</p>
                   <button
                     type="button"
                     className="primary-page-button"
@@ -460,7 +478,7 @@ function App() {
                       setSelectedCategoryFilter("Semua");
                     }}
                   >
-                    Reset Filter
+                    {t.resetFilter}
                   </button>
                 </div>
               ) : (
@@ -485,7 +503,7 @@ function App() {
                 className="back-page-button"
                 onClick={() => setSelectedProduct(null)}
               >
-                ← Kembali ke Produk
+                {t.backToProducts}
               </button>
 
               <div className="product-detail-card">
@@ -509,8 +527,7 @@ function App() {
                   </p>
 
                   <p className="product-detail-description">
-                    {selectedProduct.description ||
-                      "Produk pilihan Storeku dengan kualitas terbaik dan cocok untuk kebutuhan sehari-hari."}
+                    {selectedProduct.description || t.defaultProductDesc}
                   </p>
 
                   <div style={{ marginTop: "14px" }}>
@@ -519,7 +536,7 @@ function App() {
                       className="primary-page-button"
                       onClick={() => handleOpenOrderModal(selectedProduct)}
                     >
-                      Pesan Produk Sekarang
+                      {t.orderProductNow}
                     </button>
                   </div>
                 </div>
@@ -556,7 +573,7 @@ function App() {
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
                   <h2 style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>
-                    Form Pemesanan Barang
+                    {t.orderFormTitle}
                   </h2>
                   <button
                     type="button"
@@ -592,7 +609,7 @@ function App() {
                 <form onSubmit={handleConfirmOrder}>
                   <div style={{ marginBottom: "12px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      Jumlah Beli <span style={{ color: "#ef4444" }}>*</span>
+                      {t.buyQuantity} <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <input
                       type="number"
@@ -606,12 +623,12 @@ function App() {
 
                   <div style={{ marginBottom: "12px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      Alamat Pengiriman Lengkap <span style={{ color: "#ef4444" }}>*</span>
+                      {t.shippingAddress} <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <textarea
                       rows={3}
                       required
-                      placeholder="Masukkan alamat rumah / kantor kamu (minimal 5 karakter)..."
+                      placeholder={t.shippingAddressPlaceholder}
                       value={orderAddress}
                       onChange={(e) => setOrderAddress(e.target.value)}
                       style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
@@ -620,11 +637,11 @@ function App() {
 
                   <div style={{ marginBottom: "18px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
-                      Catatan Tambahan (Opsional)
+                      {t.notes}
                     </label>
                     <input
                       type="text"
-                      placeholder="Contoh: Ukuran L, warna hitam / packing bubble wrap"
+                      placeholder={t.notesPlaceholder}
                       value={orderNotes}
                       onChange={(e) => setOrderNotes(e.target.value)}
                       style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
@@ -637,7 +654,7 @@ function App() {
                       onClick={() => setShowOrderModal(false)}
                       style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer" }}
                     >
-                      Batal
+                      {t.cancel}
                     </button>
                     <button
                       type="submit"
@@ -645,7 +662,7 @@ function App() {
                       className="primary-page-button"
                       style={{ padding: "8px 20px" }}
                     >
-                      {isSubmittingOrder ? "Mengirim..." : "Kirim Pesanan"}
+                      {isSubmittingOrder ? t.submittingOrder : t.submitOrder}
                     </button>
                   </div>
                 </form>
@@ -657,14 +674,12 @@ function App() {
           {activePage === "promo" && !selectedProduct && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">STOREKU PROMOSI</span>
-                <h1>Promo Spesial</h1>
-                <p>
-                  Nikmati berbagai penawaran menarik dengan diskon spesial dari Storeku.
-                </p>
+                <span className="section-kicker">{t.promoPageKicker}</span>
+                <h1>{t.promoPageTitle}</h1>
+                <p>{t.promoPageDesc}</p>
               </div>
 
-              <PromoSection onShopClick={() => handlePageChange("produk")} />
+              <PromoSection onShopClick={() => handlePageChange("produk")} t={t} />
 
               <div className="promo-product-grid">
                 {promoProducts.map((product) => (
@@ -702,7 +717,7 @@ function App() {
                         className="promo-detail-button"
                         onClick={() => handleProductClick(product)}
                       >
-                        Lihat Detail Produk
+                        {t.viewProductDetail}
                       </button>
                     </div>
                   </article>
@@ -726,26 +741,24 @@ function App() {
           {activePage === "akun" && !showLogin && (
             <section className="page-section">
               <div className="page-header">
-                <span className="section-kicker">PROFIL PENGGUNA</span>
-                <h1>Akun Saya</h1>
-                <p>
-                  Kelola data akun pembeli untuk pemesanan barang di Storeku.
-                </p>
+                <span className="section-kicker">{t.accountKicker}</span>
+                <h1>{t.accountTitle}</h1>
+                <p>{t.accountDesc}</p>
               </div>
 
               <div className="account-card">
                 <div className="account-avatar">👤</div>
 
                 <div className="account-info">
-                  <span>DATA AKUN</span>
+                  <span>{t.accountDataTag}</span>
                   {currentUser ? (
                     <>
-                      <h2>Halo, {currentUser.name}!</h2>
+                      <h2>{t.hello}, {currentUser.name}!</h2>
                       <p>
-                        No. HP: <strong>{currentUser.phone}</strong>
+                        {t.noHp}: <strong>{currentUser.phone}</strong>
                       </p>
                       <p style={{ marginTop: "4px" }}>
-                        Alamat: <strong>{currentUser.address}</strong>
+                        {t.address}: <strong>{currentUser.address}</strong>
                       </p>
                       <div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
                         <button
@@ -753,7 +766,7 @@ function App() {
                           className="primary-page-button"
                           onClick={() => handlePageChange("informasi-akun")}
                         >
-                          Ubah Data Akun
+                          {t.editAccountData}
                         </button>
                         <button
                           type="button"
@@ -761,22 +774,20 @@ function App() {
                           style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
                           onClick={handleLogout}
                         >
-                          Hapus / Logout
+                          {t.clearLogout}
                         </button>
                       </div>
                     </>
                   ) : (
                     <>
-                      <h2>Belum Ada Data Akun</h2>
-                      <p>
-                        Silakan isi data nama, no. HP, dan alamat pengiriman kamu.
-                      </p>
+                      <h2>{t.noAccountYet}</h2>
+                      <p>{t.fillAccountPrompt}</p>
                       <button
                         type="button"
                         className="primary-page-button"
                         onClick={() => handlePageChange("informasi-akun")}
                       >
-                        Isi Data Akun
+                        {t.fillAccountData}
                       </button>
                     </>
                   )}
@@ -791,8 +802,8 @@ function App() {
                 >
                   <span className="account-menu-icon">👤</span>
                   <span className="account-menu-text">
-                    <strong>Informasi Akun</strong>
-                    <small>Lihat dan ubah data nama, no. HP, dan alamat pengiriman.</small>
+                    <strong>{t.menuInfoAkunTitle}</strong>
+                    <small>{t.menuInfoAkunDesc}</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -804,8 +815,8 @@ function App() {
                 >
                   <span className="account-menu-icon">🛍️</span>
                   <span className="account-menu-text">
-                    <strong>Pesanan Saya</strong>
-                    <small>Lihat riwayat {ordersList.length} pesanan belanja kamu.</small>
+                    <strong>{t.menuOrdersTitle}</strong>
+                    <small>{t.menuOrdersDesc}</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -817,8 +828,8 @@ function App() {
                 >
                   <span className="account-menu-icon">⚙️</span>
                   <span className="account-menu-text">
-                    <strong>Pengaturan</strong>
-                    <small>Atur preferensi tampilan dan notifikasi promo.</small>
+                    <strong>{t.menuSettingsTitle}</strong>
+                    <small>{t.menuSettingsDesc}</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -834,15 +845,13 @@ function App() {
                 className="back-page-button"
                 onClick={handleBackToAccount}
               >
-                ← Kembali ke Akun
+                {t.backToAccount}
               </button>
 
               <div className="page-header">
-                <span className="section-kicker">PENGATURAN IDENTITAS</span>
-                <h1>Informasi Akun</h1>
-                <p>
-                  Ubah dan simpan nama, no. HP, serta alamat pengiriman kamu untuk belanja di Storeku.
-                </p>
+                <span className="section-kicker">{t.infoAkunKicker}</span>
+                <h1>{t.infoAkunTitle}</h1>
+                <p>{t.infoAkunDesc}</p>
               </div>
 
               {profileSuccessMessage && (
@@ -871,7 +880,7 @@ function App() {
                 <form onSubmit={handleSaveProfile} style={{ flex: 1 }}>
                   <div style={{ marginBottom: "14px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
-                      Nama Lengkap <span style={{ color: "#ef4444" }}>*</span>
+                      {t.fullName} <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <input
                       type="text"
@@ -892,7 +901,7 @@ function App() {
 
                   <div style={{ marginBottom: "14px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
-                      No. HP / WhatsApp <span style={{ color: "#ef4444" }}>*</span>
+                      {t.phoneWhatsapp} <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <input
                       type="tel"
@@ -913,7 +922,7 @@ function App() {
 
                   <div style={{ marginBottom: "18px" }}>
                     <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
-                      Alamat Lengkap Pengiriman <span style={{ color: "#ef4444" }}>*</span>
+                      {t.fullAddress} <span style={{ color: "#ef4444" }}>*</span>
                     </label>
                     <textarea
                       rows={3}
@@ -938,7 +947,7 @@ function App() {
                       className="primary-page-button"
                       style={{ padding: "10px 22px" }}
                     >
-                      Simpan Data Akun
+                      {t.saveAccountData}
                     </button>
 
                     <button
@@ -957,7 +966,7 @@ function App() {
                         }
                       }}
                     >
-                      Reset Form
+                      {t.resetForm}
                     </button>
                   </div>
                 </form>
@@ -973,24 +982,20 @@ function App() {
                 className="back-page-button"
                 onClick={handleBackToAccount}
               >
-                ← Kembali ke Akun
+                {t.backToAccount}
               </button>
 
               <div className="page-header">
-                <span className="section-kicker">PREFERENSI</span>
-                <h1>Pengaturan</h1>
-                <p>
-                  Sesuaikan preferensi tampilan dan notifikasi Storeku.
-                </p>
+                <span className="section-kicker">{t.settingsKicker}</span>
+                <h1>{t.settingsTitle}</h1>
+                <p>{t.settingsDesc}</p>
               </div>
 
               <div className="settings-card">
                 <div className="settings-item">
                   <div>
-                    <strong>Notifikasi Promo</strong>
-                    <small>
-                      Izinkan notifikasi penawaran spesial dan diskon.
-                    </small>
+                    <strong>{t.promoNotifTitle}</strong>
+                    <small>{t.promoNotifDesc}</small>
                   </div>
 
                   <label className="switch">
@@ -1001,10 +1006,8 @@ function App() {
 
                 <div className="settings-item">
                   <div>
-                    <strong>Pengingat Pesanan</strong>
-                    <small>
-                      Dapatkan status pembaruan transaksi pesanan kamu.
-                    </small>
+                    <strong>{t.orderReminderTitle}</strong>
+                    <small>{t.orderReminderDesc}</small>
                   </div>
 
                   <label className="switch">
@@ -1015,15 +1018,25 @@ function App() {
 
                 <div className="settings-item">
                   <div>
-                    <strong>Bahasa Tampilan</strong>
-                    <small>
-                      Pilih bahasa aplikasi Storeku.
-                    </small>
+                    <strong>{t.displayLanguageTitle}</strong>
+                    <small>{t.displayLanguageDesc}</small>
                   </div>
 
-                  <select defaultValue="id">
-                    <option value="id">Bahasa Indonesia</option>
-                    <option value="en">English</option>
+                  <select
+                    value={language}
+                    onChange={(e) => handleLanguageChange(e.target.value)}
+                    style={{
+                      padding: "8px 12px",
+                      borderRadius: "6px",
+                      border: "1px solid #d1d5db",
+                      fontWeight: "600",
+                      fontSize: "14px",
+                      backgroundColor: "#f9fafb",
+                      cursor: "pointer",
+                    }}
+                  >
+                    <option value="id">🇮🇩 Bahasa Indonesia</option>
+                    <option value="en">🇬🇧 English</option>
                   </select>
                 </div>
               </div>
@@ -1036,6 +1049,7 @@ function App() {
               initialData={currentUser}
               onBack={() => setShowLogin(false)}
               onLoginSuccess={handleLoginSuccess}
+              t={t}
             />
           )}
 
@@ -1043,11 +1057,11 @@ function App() {
             <div>
               <strong>STOREKU.</strong>
               <span>
-                Temukan gaya terbaikmu bersama Storeku.
+                {t.footerTagline}
               </span>
             </div>
 
-            <p>© 2026 Storeku. All rights reserved.</p>
+            <p>© 2026 Storeku. {t.allRightsReserved}</p>
           </footer>
         </main>
       </div>

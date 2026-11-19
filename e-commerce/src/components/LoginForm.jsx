@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-function LoginForm({ initialData, onBack, onLoginSuccess }) {
+function LoginForm({ initialData, onBack, onLoginSuccess, t }) {
   const [name, setName] = useState(initialData?.name || "");
   const [phone, setPhone] = useState(initialData?.phone || "");
   const [address, setAddress] = useState(initialData?.address || "");
@@ -22,14 +22,14 @@ function LoginForm({ initialData, onBack, onLoginSuccess }) {
     <section className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <span className="section-kicker">STOREKU AKUN</span>
-          <h1>Data Akun</h1>
-          <p>Masukkan nama, no. HP, dan alamat pengiriman kamu.</p>
+          <span className="section-kicker">{t?.authKicker || "STOREKU AKUN"}</span>
+          <h1>{t?.authTitle || "Data Akun"}</h1>
+          <p>{t?.authDesc || "Masukkan nama, no. HP, dan alamat pengiriman kamu."}</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="name">Nama <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="name">{t?.fullName || "Nama"} <span style={{ color: "red" }}>*</span></label>
             <input
               id="name"
               type="text"
@@ -41,7 +41,7 @@ function LoginForm({ initialData, onBack, onLoginSuccess }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="phone">No. HP <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="phone">{t?.phoneWhatsapp || "No. HP"} <span style={{ color: "red" }}>*</span></label>
             <input
               id="phone"
               type="tel"
@@ -53,7 +53,7 @@ function LoginForm({ initialData, onBack, onLoginSuccess }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="address">Alamat <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="address">{t?.fullAddress || "Alamat"} <span style={{ color: "red" }}>*</span></label>
             <textarea
               id="address"
               rows={3}
@@ -66,7 +66,7 @@ function LoginForm({ initialData, onBack, onLoginSuccess }) {
           </div>
 
           <button type="submit" className="primary-page-button" style={{ width: "100%", marginTop: "10px" }}>
-            Simpan Data Akun
+            {t?.saveAndLogin || "Simpan Data Akun"}
           </button>
         </form>
 
@@ -75,7 +75,7 @@ function LoginForm({ initialData, onBack, onLoginSuccess }) {
           className="back-button"
           onClick={onBack}
         >
-          ← Batal
+          ← {t?.cancel || "Batal"}
         </button>
       </div>
     </section>

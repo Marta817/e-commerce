@@ -6,31 +6,31 @@ import {
   UserRound,
 } from "lucide-react";
 
-function Sidebar({ activePage, onPageChange }) {
+function Sidebar({ activePage, onPageChange, t }) {
   const menuItems = [
     {
       icon: House,
-      label: "Beranda",
+      label: t?.home || "Beranda",
       page: "beranda",
     },
     {
       icon: ShoppingBag,
-      label: "Produk",
+      label: t?.products || "Produk",
       page: "produk",
     },
     {
       icon: Tag,
-      label: "Promo",
+      label: t?.promo || "Promo",
       page: "promo",
     },
     {
       icon: ClipboardList,
-      label: "Pemesanan",
+      label: t?.orders || "Pemesanan",
       page: "pemesanan",
     },
     {
       icon: UserRound,
-      label: "Akun",
+      label: t?.account || "Akun",
       page: "akun",
     },
   ];
@@ -38,7 +38,7 @@ function Sidebar({ activePage, onPageChange }) {
   return (
     <aside className="sidebar">
       <div className="sidebar-heading">
-        MENU STOREKU
+        {t?.menuStoreku || "MENU STOREKU"}
       </div>
 
       <nav className="sidebar-menu">

@@ -1,4 +1,4 @@
-function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick }) {
+function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick, t }) {
   return (
     <header className="header-store">
       <div className="header-left">
@@ -6,7 +6,7 @@ function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick }) {
           className="store-logo"
           onClick={onLogoClick}
           style={{ cursor: "pointer" }}
-          title="Kembali ke Beranda"
+          title={t?.home || "Kembali ke Beranda"}
         >
           STOREKU<span>.</span>
         </div>
@@ -16,7 +16,7 @@ function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick }) {
         {currentUser ? (
           <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
             <span style={{ fontSize: "14px", fontWeight: "600", color: "#374151" }}>
-              👋 Hai, <strong>{currentUser.name}</strong>
+              👋 {t?.hi || "Hai"}, <strong>{currentUser.name}</strong>
             </span>
             <button
               className="login-button"
@@ -24,7 +24,7 @@ function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick }) {
               onClick={onLogoutClick}
               style={{ backgroundColor: "#fef2f2", color: "#dc2626", border: "1px solid #fecaca" }}
             >
-              Keluar / Logout
+              {t?.logout || "Keluar / Logout"}
             </button>
           </div>
         ) : (
@@ -33,7 +33,7 @@ function Header({ currentUser, onLoginClick, onLogoutClick, onLogoClick }) {
             type="button"
             onClick={onLoginClick}
           >
-            Masuk / Login
+            {t?.login || "Masuk / Login"}
           </button>
         )}
       </div>
