@@ -129,6 +129,22 @@ export const translations = {
     authTitle: "Data Akun",
     authDesc: "Masukkan nama, no. HP, dan alamat pengiriman kamu.",
     saveAndLogin: "Simpan Data Akun",
+
+    // Pusat Bantuan
+    needHelp: "Butuh Bantuan?",
+    contactUs: "Hubungi kami",
+    helpCenterTitle: "Pusat Bantuan Storeku",
+    helpCenterSubtitle: "Pertanyaan yang sering diajukan & kontak layanan pelanggan Storeku.",
+    faqTitle: "Pertanyaan yang Sering Diajukan (FAQ)",
+    faq1Q: "Bagaimana cara memesan produk?",
+    faq1A: "Buka menu Produk, pilih item yang kamu suka, lalu klik tombol 'Pesan Produk Sekarang' dan isi alamat pengiriman kamu.",
+    faq2Q: "Apakah bisa mengubah alamat pengiriman?",
+    faq2A: "Bisa, kamu cukup masuk ke menu 'Pemesanan', lalu klik tombol edit (ikon pensil) pada pesanan untuk mengubah alamat atau catatan.",
+    faq3Q: "Bagaimana cara membatalkan pesanan?",
+    faq3A: "Buka menu 'Pemesanan', lalu klik tombol batal (ikon tempat sampah) pada kartu pesanan yang ingin dibatalkan.",
+    contactTitle: "Kontak Layanan Pelanggan",
+    csHours: "Setiap hari: 09.00 - 21.00 WIB",
+    closeHelp: "Tutup Pusat Bantuan",
   },
   en: {
     // Menu & Header
@@ -260,6 +276,22 @@ export const translations = {
     authTitle: "Account Data",
     authDesc: "Enter your name, phone number, and shipping address.",
     saveAndLogin: "Save Account Data",
+
+    // Pusat Bantuan
+    needHelp: "Need Help?",
+    contactUs: "Contact us",
+    helpCenterTitle: "Storeku Help Center",
+    helpCenterSubtitle: "Frequently asked questions & Storeku customer support.",
+    faqTitle: "Frequently Asked Questions (FAQ)",
+    faq1Q: "How do I place an order?",
+    faq1A: "Go to the Products menu, choose your preferred item, click 'Order Product Now', and fill in your delivery address.",
+    faq2Q: "Can I edit my order address?",
+    faq2A: "Yes, simply navigate to 'Orders' menu and click the edit pencil icon to update your shipping address or notes.",
+    faq3Q: "How do I cancel an order?",
+    faq3A: "Navigate to 'Orders' menu and click the trash can icon on the order you wish to cancel.",
+    contactTitle: "Customer Support Contact",
+    csHours: "Everyday: 09:00 - 21:00 WIB",
+    closeHelp: "Close Help Center",
   },
 };
 

@@ -6,7 +6,7 @@ import {
   UserRound,
 } from "lucide-react";
 
-function Sidebar({ activePage, onPageChange, t, language, onLanguageChange }) {
+function Sidebar({ activePage, onPageChange, t, language, onLanguageChange, onOpenHelp }) {
   const menuItems = [
     {
       icon: House,
@@ -89,14 +89,32 @@ function Sidebar({ activePage, onPageChange, t, language, onLanguageChange }) {
           </select>
         </div>
 
-        <div className="sidebar-help">
+        <button
+          type="button"
+          className="sidebar-help"
+          onClick={onOpenHelp}
+          style={{
+            background: "none",
+            border: "none",
+            padding: "10px",
+            textAlign: "left",
+            width: "100%",
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+            borderRadius: "10px",
+            transition: "all 0.2s ease",
+          }}
+          title={t?.helpCenterTitle || "Pusat Bantuan"}
+        >
           <span className="help-icon">?</span>
 
           <div>
-            <strong>{language === "en" ? "Need Help?" : "Butuh Bantuan?"}</strong>
-            <small>{language === "en" ? "Contact us" : "Hubungi kami"}</small>
+            <strong>{t?.needHelp || "Butuh Bantuan?"}</strong>
+            <small style={{ display: "block" }}>{t?.contactUs || "Hubungi kami"}</small>
           </div>
-        </div>
+        </button>
       </div>
     </aside>
   );
