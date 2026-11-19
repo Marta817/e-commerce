@@ -93,6 +93,11 @@ Storeku adalah web e-commerce untuk toko fashion dan lifestyle. Pada tugas pekan
      - **Ubah (PATCH)**: Di menu *"Pemesanan"*, user bisa klik *"Ubah Alamat"* untuk memperbarui alamat pengiriman.
      - **Hapus (DELETE)**: Di menu *"Pemesanan"*, user bisa klik *"Batalkan"* untuk menghapus pesanan.
 
+9. **Fitur Pengalaman Pengguna (User Experience)**  
+   - **Profil Pembeli**: Mengelola 3 data utama (Nama, No. HP, dan Alamat) yang tersimpan di browser dan otomatis mengisi form checkout pesanan.
+   - **Pilihan Bahasa (Bilingual)**: Pengaturan bahasa di menu Akun untuk beralih secara instan antara Bahasa Indonesia dan English.
+   - **Pusat Bantuan & Live Chat**: FAQ interaktif yang bisa diklik per kendala serta terhubung langsung ke fitur chat CS di dalam website.
+
 ---
 
 ## Cara Menjalankan Proyek
