@@ -77,11 +77,45 @@ function App() {
   const [currentUser, setCurrentUser] = useState(() => {
     try {
       const saved = localStorage.getItem("storeku_user");
-      return saved ? JSON.parse(saved) : null;
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed && parsed.name) {
+          return {
+            name: parsed.name,
+            phone: parsed.phone || "0812-3456-7890",
+            address: parsed.address || "Jl. Merdeka No. 45, Jakarta Selatan",
+          };
+        }
+      }
+      const initial = {
+        name: "Marta",
+        phone: "0812-3456-7890",
+        address: "Jl. Merdeka No. 45, Jakarta Selatan",
+      };
+      localStorage.setItem("storeku_user", JSON.stringify(initial));
+      return initial;
     } catch {
-      return null;
+      return {
+        name: "Marta",
+        phone: "0812-3456-7890",
+        address: "Jl. Merdeka No. 45, Jakarta Selatan",
+      };
     }
   });
+
+  // Profile Form State
+  const [profileName, setProfileName] = useState(() => currentUser?.name || "Marta");
+  const [profilePhone, setProfilePhone] = useState(() => currentUser?.phone || "0812-3456-7890");
+  const [profileAddress, setProfileAddress] = useState(() => currentUser?.address || "Jl. Merdeka No. 45, Jakarta Selatan");
+  const [profileSuccessMessage, setProfileSuccessMessage] = useState("");
+
+  useEffect(() => {
+    if (currentUser) {
+      setProfileName(currentUser.name || "");
+      setProfilePhone(currentUser.phone || "");
+      setProfileAddress(currentUser.address || "");
+    }
+  }, [currentUser]);
 
   const fetchProducts = async () => {
     try {
@@ -142,19 +176,38 @@ function App() {
     handlePageChange("produk");
   };
 
+  const handleSaveProfile = (e) => {
+    if (e) e.preventDefault();
+    const updated = {
+      name: profileName.trim() || "Marta",
+      phone: profilePhone.trim() || "0812-3456-7890",
+      address: profileAddress.trim() || "Jl. Merdeka No. 45, Jakarta Selatan",
+    };
+    setCurrentUser(updated);
+    localStorage.setItem("storeku_user", JSON.stringify(updated));
+    setOrderAddress(updated.address);
+    setProfileSuccessMessage("Data akun berhasil disimpan!");
+    setTimeout(() => {
+      setProfileSuccessMessage("");
+    }, 3500);
+  };
+
   const handleLoginSuccess = (userData) => {
     setCurrentUser(userData);
     localStorage.setItem("storeku_user", JSON.stringify(userData));
     setShowLogin(false);
     setActivePage("akun");
-    alert(`Selamat datang, ${userData.name}! Login berhasil.`);
   };
 
   const handleLogout = () => {
-    if (window.confirm("Apakah Anda yakin ingin keluar dari akun?")) {
+    if (window.confirm("Apakah Anda yakin ingin menghapus data akun dari browser?")) {
       setCurrentUser(null);
       localStorage.removeItem("storeku_user");
-      alert("Anda telah berhasil logout.");
+      setProfileName("");
+      setProfilePhone("");
+      setProfileAddress("");
+      setProfileSuccessMessage("Data akun telah dibersihkan.");
+      setTimeout(() => setProfileSuccessMessage(""), 3000);
     }
   };
 
@@ -698,7 +751,7 @@ function App() {
                         <button
                           type="button"
                           className="primary-page-button"
-                          onClick={() => setShowLogin(true)}
+                          onClick={() => handlePageChange("informasi-akun")}
                         >
                           Ubah Data Akun
                         </button>
@@ -708,7 +761,7 @@ function App() {
                           style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
                           onClick={handleLogout}
                         >
-                          Keluar / Logout
+                          Hapus / Logout
                         </button>
                       </div>
                     </>
@@ -721,7 +774,7 @@ function App() {
                       <button
                         type="button"
                         className="primary-page-button"
-                        onClick={() => setShowLogin(true)}
+                        onClick={() => handlePageChange("informasi-akun")}
                       >
                         Isi Data Akun
                       </button>
@@ -739,7 +792,7 @@ function App() {
                   <span className="account-menu-icon">👤</span>
                   <span className="account-menu-text">
                     <strong>Informasi Akun</strong>
-                    <small>Lihat detail nama, no. HP, dan alamat pengiriman.</small>
+                    <small>Lihat dan ubah data nama, no. HP, dan alamat pengiriman.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -785,53 +838,129 @@ function App() {
               </button>
 
               <div className="page-header">
-                <span className="section-kicker">DETAIL PENGGUNA</span>
+                <span className="section-kicker">PENGATURAN IDENTITAS</span>
                 <h1>Informasi Akun</h1>
                 <p>
-                  Data identitas pembeli untuk pengiriman pesanan di Storeku.
+                  Ubah dan simpan nama, no. HP, serta alamat pengiriman kamu untuk belanja di Storeku.
                 </p>
               </div>
 
-              <div className="account-detail-card">
+              {profileSuccessMessage && (
+                <div
+                  style={{
+                    padding: "12px 16px",
+                    backgroundColor: "#f0fdf4",
+                    color: "#166534",
+                    border: "1px solid #bbf7d0",
+                    borderRadius: "8px",
+                    marginBottom: "16px",
+                    fontWeight: "600",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                  }}
+                >
+                  <span>✓</span>
+                  <span>{profileSuccessMessage}</span>
+                </div>
+              )}
+
+              <div className="account-detail-card" style={{ maxWidth: "600px" }}>
                 <div className="account-detail-avatar">👤</div>
 
-                <div className="account-detail-content">
-                  <div className="account-detail-row">
-                    <span>Nama</span>
-                    <strong>{currentUser ? currentUser.name : "Belum diisi"}</strong>
+                <form onSubmit={handleSaveProfile} style={{ flex: 1 }}>
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
+                      Nama Lengkap <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="Contoh: Marta"
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        fontSize: "14px",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
 
-                  <div className="account-detail-row">
-                    <span>No. HP</span>
-                    <strong>{currentUser ? currentUser.phone : "Belum diisi"}</strong>
+                  <div style={{ marginBottom: "14px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
+                      No. HP / WhatsApp <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <input
+                      type="tel"
+                      required
+                      placeholder="Contoh: 0812-3456-7890"
+                      value={profilePhone}
+                      onChange={(e) => setProfilePhone(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        fontSize: "14px",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
 
-                  <div className="account-detail-row">
-                    <span>Alamat</span>
-                    <strong>{currentUser ? currentUser.address : "Belum diisi"}</strong>
+                  <div style={{ marginBottom: "18px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "6px", color: "#374151" }}>
+                      Alamat Lengkap Pengiriman <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      placeholder="Contoh: Jl. Merdeka No. 45, Jakarta Selatan"
+                      value={profileAddress}
+                      onChange={(e) => setProfileAddress(e.target.value)}
+                      style={{
+                        width: "100%",
+                        padding: "10px 12px",
+                        borderRadius: "8px",
+                        border: "1px solid #d1d5db",
+                        fontSize: "14px",
+                        boxSizing: "border-box",
+                      }}
+                    />
                   </div>
-                </div>
-              </div>
 
-              <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
-                <button
-                  type="button"
-                  className="primary-page-button"
-                  onClick={() => setShowLogin(true)}
-                >
-                  {currentUser ? "Ubah Data Akun" : "Isi Data Akun"}
-                </button>
+                  <div style={{ display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                    <button
+                      type="submit"
+                      className="primary-page-button"
+                      style={{ padding: "10px 22px" }}
+                    >
+                      Simpan Data Akun
+                    </button>
 
-                {currentUser && (
-                  <button
-                    type="button"
-                    className="primary-page-button"
-                    style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
-                    onClick={handleLogout}
-                  >
-                    Keluar / Hapus Data
-                  </button>
-                )}
+                    <button
+                      type="button"
+                      className="primary-page-button"
+                      style={{ backgroundColor: "#f3f4f6", borderColor: "#d1d5db", color: "#374151" }}
+                      onClick={() => {
+                        if (currentUser) {
+                          setProfileName(currentUser.name || "");
+                          setProfilePhone(currentUser.phone || "");
+                          setProfileAddress(currentUser.address || "");
+                        } else {
+                          setProfileName("Marta");
+                          setProfilePhone("0812-3456-7890");
+                          setProfileAddress("Jl. Merdeka No. 45, Jakarta Selatan");
+                        }
+                      }}
+                    >
+                      Reset Form
+                    </button>
+                  </div>
+                </form>
               </div>
             </section>
           )}
