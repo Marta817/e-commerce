@@ -1,14 +1,13 @@
 import {
   House,
   ShoppingBag,
-  ShieldCheck,
   Tag,
   ClipboardList,
   UserRound,
 } from "lucide-react";
 
 function Sidebar({ activePage, onPageChange }) {
-  const buyerMenu = [
+  const menuItems = [
     {
       icon: House,
       label: "Beranda",
@@ -36,22 +35,14 @@ function Sidebar({ activePage, onPageChange }) {
     },
   ];
 
-  const adminMenu = [
-    {
-      icon: ShieldCheck,
-      label: "Kelola Produk (Admin)",
-      page: "kelola-produk",
-    },
-  ];
-
   return (
     <aside className="sidebar">
       <div className="sidebar-heading">
-        MENU PEMBELI
+        MENU STOREKU
       </div>
 
       <nav className="sidebar-menu">
-        {buyerMenu.map((item) => {
+        {menuItems.map((item) => {
           const Icon = item.icon;
           return (
             <button
@@ -61,34 +52,6 @@ function Sidebar({ activePage, onPageChange }) {
                 activePage === item.page ? "active" : ""
               }`}
               onClick={() => onPageChange(item.page)}
-            >
-              <Icon
-                className="sidebar-icon"
-                size={19}
-                strokeWidth={2}
-              />
-              <span>{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
-      <div className="sidebar-heading" style={{ marginTop: "24px" }}>
-        PANEL ADMIN (SELLER)
-      </div>
-
-      <nav className="sidebar-menu">
-        {adminMenu.map((item) => {
-          const Icon = item.icon;
-          return (
-            <button
-              key={item.page}
-              type="button"
-              className={`sidebar-link ${
-                activePage === item.page ? "active" : ""
-              }`}
-              onClick={() => onPageChange(item.page)}
-              style={activePage === item.page ? {} : { color: "#4f46e5" }}
             >
               <Icon
                 className="sidebar-icon"

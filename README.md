@@ -10,55 +10,59 @@ Repository ini berisi tugas pekan 3 kelanjutan dari aplikasi **Storeku** (aplika
 ---
 
 ## Penjelasan Singkat Aplikasi
-Storeku adalah web e-commerce sederhana untuk toko fashion/lifestyle. Pada tugas kali ini, backend dibuat untuk mengelola data utama berupa **Produk (`Product`)**. Seluruh data disimpan sementara di memori backend (in-memory array pada service) dan sudah terhubung langsung ke tampilan frontend sehingga produk bisa ditambah, diedit, dan dihapus secara realtime.
+Storeku adalah web e-commerce untuk toko fashion dan lifestyle. Pada tugas pekan ini, backend NestJS dibangun untuk mengelola data utama aktivitas pembeli yaitu **Pesanan (`Order`)**. Seluruh data disimpan sementara di memori backend (in-memory array pada service) dan sudah terhubung langsung ke tampilan frontend:
+- User bisa memesan produk langsung dari katalog toko.
+- Di menu **Pemesanan**, user bisa melihat riwayat pesanan, mengedit alamat/catatan, atau membatalkan pesanan.
 
 ---
 
 ## Poin-Poin Pengerjaan Tugas
 
-1. **Data Utama (`Product`)**  
-   Data utama yang dikelola adalah Produk. Entitas dibuat di `backend/src/products/entities/product.entity.ts` dengan total 9 atribut:
-   - `id` (number)
-   - `name` (string)
-   - `price` (number)
-   - `category` (string: Pakaian, Outerwear, Sepatu, Tas, Aksesori)
-   - `stock` (number)
-   - `description` (string)
-   - `isAvailable` (boolean)
-   - `image` (string, opsional)
-   - `createdAt` (Date)
+1. **Data Utama (`Order`)**  
+   Data utama yang dikelola pembeli adalah Pesanan (`Order`). Entitas dibuat di `backend/src/orders/entities/order.entity.ts` dengan total 11 atribut:
+   - `id` (number): ID pesanan unik.
+   - `customerName` (string): Nama pemesan.
+   - `productName` (string): Nama produk yang dibeli.
+   - `price` (number): Harga satuan produk.
+   - `quantity` (number): Jumlah barang yang dipesan.
+   - `totalPrice` (number): Total harga belanja.
+   - `address` (string): Alamat pengiriman barang.
+   - `notes` (string, opsional): Catatan pesanan (ukuran/warna).
+   - `status` (string): Status pesanan (`Diproses`, `Dikirim`, `Selesai`, `Dibatalkan`).
+   - `image` (string, opsional): URL foto produk.
+   - `createdAt` (Date): Waktu pesanan dibuat.
 
 2. **Resource NestJS**  
    Dibuat menggunakan Nest CLI:
    ```bash
-   nest g resource products
+   nest g resource orders
    ```
-   File otomatis terbuat di folder `backend/src/products/`.
+   File otomatis terbuat di folder `backend/src/orders/`.
 
 3. **Service CRUD (In-Memory)**  
-   Implementasi ada di `backend/src/products/products.service.ts`. Data disimpan dalam array `private products: Product[]` dengan fungsi CRUD lengkap:
-   - `create`: Menambahkan produk baru (ID dan createdAt otomatis dibuat).
-   - `findAll`: Mengambil semua list produk.
-   - `findOne`: Mengambil 1 produk berdasarkan ID.
-   - `update`: Mengupdate data produk tertentu.
-   - `remove`: Menghapus produk dari array.
+   Implementasi ada di `backend/src/orders/orders.service.ts`. Data disimpan dalam array `private orders: Order[]` dengan fungsi CRUD lengkap:
+   - `create`: Menambahkan pesanan baru ke antrean (ID, total harga, dan createdAt otomatis dibuat).
+   - `findAll`: Mengambil semua daftar pesanan pembeli.
+   - `findOne`: Mengambil 1 pesanan berdasarkan ID.
+   - `update`: Mengubah alamat pengiriman atau catatan pesanan.
+   - `remove`: Membatalkan / menghapus pesanan dari array.
 
 4. **Controller & Dependency Injection**  
-   Implementasi ada di `backend/src/products/products.controller.ts`. Service di-inject langsung melalui constructor (`constructor(private readonly productsService: ProductsService) {}`) tanpa membuat instance manual. Menggunakan method:
-   - `GET /products`
-   - `GET /products/:id` (dengan `ParseIntPipe`)
-   - `POST /products`
-   - `PATCH /products/:id`
-   - `DELETE /products/:id`
+   Implementasi ada di `backend/src/orders/orders.controller.ts`. Service di-inject langsung melalui constructor (`constructor(private readonly ordersService: OrdersService) {}`) tanpa membuat instance manual. Menggunakan method:
+   - `GET /orders`
+   - `GET /orders/:id` (dengan `ParseIntPipe`)
+   - `POST /orders`
+   - `PATCH /orders/:id`
+   - `DELETE /orders/:id`
 
 5. **DTO & Validasi (class-validator)**  
-   DTO dibuat di `backend/src/products/dto/create-product.dto.ts` dan `update-product.dto.ts`. Validasi yang digunakan:
-   - `@IsNotEmpty()` dan `@IsString()`
-   - `@MinLength(3)` untuk nama produk minimal 3 karakter
-   - `@IsNumber()` dan `@Min(1000)` untuk harga minimal Rp 1.000
-   - `@IsIn()` untuk membatasi kategori yang dibolehkan
-   - `@IsInt()` dan `@Min(0)` untuk stok tidak boleh negatif
-   - `@IsOptional()` dan `@IsBoolean()` untuk ketersediaan
+   DTO dibuat di `backend/src/orders/dto/create-order.dto.ts` dan `update-order.dto.ts`. Validasi yang digunakan:
+   - `@IsNotEmpty()`, `@IsString()`, `@MinLength(3)` untuk nama pemesan.
+   - `@IsNotEmpty()`, `@IsString()` untuk nama produk.
+   - `@IsNotEmpty()`, `@IsNumber()`, `@Min(1000)` untuk harga minimal Rp 1.000.
+   - `@IsNotEmpty()`, `@IsInt()`, `@Min(1)` untuk jumlah beli minimal 1 barang.
+   - `@IsNotEmpty()`, `@IsString()`, `@MinLength(5)` untuk alamat pengiriman minimal 5 karakter.
+   - `@IsOptional()`, `@IsIn(['Diproses', 'Dikirim', 'Selesai', 'Dibatalkan'])` untuk status pesanan.
    
    ValidationPipe diaktifkan secara global di `backend/src/main.ts`:
    ```typescript
@@ -73,18 +77,21 @@ Storeku adalah web e-commerce sederhana untuk toko fashion/lifestyle. Pada tugas
 
 6. **Error Handling (Exception Bawaan NestJS)**  
    Menangani error menggunakan:
-   - `NotFoundException` (404): Muncul saat mencari, mengedit, atau menghapus produk dengan ID yang tidak ada.
-   - `ConflictException` (409): Muncul saat menambahkan produk dengan nama yang sudah pernah dibuat sebelumnya.
+   - `NotFoundException` (404): Muncul saat mencari, mengedit alamat, atau membatalkan pesanan dengan ID yang tidak ada.
+   - `ConflictException` (409): Muncul saat user memesan barang yang sama persis dalam status yang masih diproses (mencegah double order).
    - `BadRequestException` (400): Muncul otomatis dari ValidationPipe jika isi body request tidak sesuai aturan DTO.
 
 7. **Testing REST Client**  
    Seluruh endpoint sudah dites menggunakan file `api.http` di root proyek. Ada 10 skenario request (sukses dan error) yang sudah diuji.
 
-8. **Integrasi Frontend & Backend**  
+8. **Integrasi Frontend & Backend (Alur Murni User)**  
    - Backend sudah mengaktifkan CORS (`app.enableCors()`).
-   - Di frontend React (`e-commerce/`), dibuat halaman baru **Kelola Produk** (`ProductManagement.jsx`) yang langsung nembak ke `http://localhost:3000/products`.
-   - Alur CRUD berjalan penuh: user bisa tambah produk lewat modal, edit harga/stok, dan hapus produk.
-   - Katalog produk di halaman Beranda dan Produk juga otomatis menampilkan data live dari backend.
+   - Menu website tetap original (Beranda, Produk, Promo, Pemesanan, Akun) murni untuk pembeli.
+   - Alur CRUD penuh:
+     - **Tambah (POST)**: User buka detail produk di katalog ➔ klik *"Pesan Produk Sekarang"* ➔ isi alamat ➔ pesanan tersimpan ke backend.
+     - **Lihat (GET)**: Masuk ke menu *"Pemesanan"* ➔ data pesanan ditarik dari backend NestJS (`/orders`).
+     - **Ubah (PATCH)**: Di menu *"Pemesanan"*, user bisa klik *"Ubah Alamat"* untuk memperbarui alamat pengiriman.
+     - **Hapus (DELETE)**: Di menu *"Pemesanan"*, user bisa klik *"Batalkan"* untuk menghapus pesanan.
 
 ---
 
@@ -95,7 +102,7 @@ Buka terminal:
 ```bash
 cd backend
 npm install
-npm run start:dev
+npm run dev
 ```
 Backend jalan di port 3000 (`http://localhost:3000`).
 
@@ -106,7 +113,7 @@ cd e-commerce
 npm install
 npm run dev
 ```
-Buka browser di `http://localhost:5173`. Masuk ke menu **Kelola Produk** di sidebar kiri.
+Buka browser di `http://localhost:5173`. Masuk ke menu **Pemesanan** di sidebar kiri.
 
 ---
 
@@ -116,40 +123,40 @@ Screenshot pengujian disimpan di folder `docs/screenshots/`:
 
 ### 1. REST Client (Backend)
 
-- **GET All Products (200 OK)**  
-  ![GET All Products](docs/screenshots/01-get-all.png)
+- **GET All Orders (200 OK)**  
+  ![GET All Orders](docs/screenshots/01-get-all.png)
 
-- **GET Product by ID (200 OK)**  
-  ![GET Product by ID](docs/screenshots/02-get-by-id.png)
+- **GET Order by ID (200 OK)**  
+  ![GET Order by ID](docs/screenshots/02-get-by-id.png)
 
-- **GET Product by ID - Not Found (404)**  
+- **GET Order by ID - Not Found (404)**  
   ![GET Not Found](docs/screenshots/03-get-not-found.png)
 
-- **POST Create Product (201 Created)**  
-  ![POST Create Product](docs/screenshots/04-post-success.png)
+- **POST Create Order (201 Created)**  
+  ![POST Create Order](docs/screenshots/04-post-success.png)
 
-- **POST Create - Conflict Nama Duplikat (409)**  
+- **POST Create - Conflict Double Order (409)**  
   ![POST Conflict](docs/screenshots/05-post-conflict.png)
 
 - **POST Create - Validasi DTO Gagal (400 Bad Request)**  
   ![POST Validation Error](docs/screenshots/06-post-validation-error.png)
 
-- **PATCH Update Product (200 OK)**  
-  ![PATCH Update Product](docs/screenshots/07-patch-success.png)
+- **PATCH Update Order Alamat (200 OK)**  
+  ![PATCH Update Order](docs/screenshots/07-patch-success.png)
 
-- **DELETE Product (200 OK)**  
-  ![DELETE Product](docs/screenshots/08-delete-success.png)
+- **DELETE Order Batalkan (200 OK)**  
+  ![DELETE Order](docs/screenshots/08-delete-success.png)
 
 ### 2. Tampilan Frontend
 
-- **Halaman Kelola Produk (Status Backend Terhubung)**  
-  ![Frontend Kelola Produk](docs/screenshots/09-frontend-kelola-produk.png)
+- **Halaman Pemesanan (Terkoneksi Backend)**  
+  ![Frontend Pemesanan](docs/screenshots/09-frontend-pemesanan.png)
 
-- **Modal Form Tambah Produk Baru**  
-  ![Frontend Tambah Produk](docs/screenshots/10-frontend-tambah-produk.png)
+- **Modal Form Pemesanan Baru (POST)**  
+  ![Frontend Tambah Pesanan](docs/screenshots/10-frontend-pesan-produk.png)
 
-- **Modal Form Edit Produk**  
-  ![Frontend Edit Produk](docs/screenshots/11-frontend-edit-produk.png)
+- **Modal Form Ubah Alamat Pesanan (PATCH)**  
+  ![Frontend Ubah Alamat](docs/screenshots/11-frontend-ubah-alamat.png)
 
-- **Hapus Data Produk & Alert Berhasil**  
-  ![Frontend Hapus Produk](docs/screenshots/12-frontend-hapus-produk.png)
+- **Konfirmasi Batalkan Pesanan (DELETE)**  
+  ![Frontend Batalkan Pesanan](docs/screenshots/12-frontend-batalkan-pesanan.png)

@@ -1,105 +1,119 @@
 ### Variabel Global
 @baseUrl = http://localhost:3000
 
-### 1. GET ALL PRODUCTS
-# Mengambil seluruh daftar produk (200 OK)
+###############################################################################
+### PENGUJIAN ENDPOINT PESANAN (ORDERS - DATA UTAMA USER)
+###############################################################################
+
+### 1. GET ALL ORDERS
+# Mengambil seluruh daftar pesanan user (200 OK)
+GET {{baseUrl}}/orders
+Accept: application/json
+
+###
+
+### 2. GET ORDER BY ID (SUCCESS)
+# Mengambil satu pesanan berdasarkan ID (200 OK)
+GET {{baseUrl}}/orders/1
+Accept: application/json
+
+###
+
+### 3. GET ORDER BY ID (ERROR - 404 NOT FOUND)
+# Mengambil pesanan dengan ID yang tidak ada (404 NotFoundException)
+GET {{baseUrl}}/orders/999
+Accept: application/json
+
+###
+
+### 4. POST CREATE ORDER (SUCCESS - 201 CREATED)
+# User membuat pesanan baru (201 Created)
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Marta",
+  "productName": "Jaket Leather",
+  "price": 349000,
+  "quantity": 1,
+  "address": "Jl. Sudirman No. 12, Surabaya",
+  "notes": "Ukuran M, tolong bungkus kado",
+  "image": "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop"
+}
+
+###
+
+### 5. POST CREATE ORDER (ERROR - 409 CONFLICT)
+# User membuat pesanan barang yang sama persis saat status sebelumnya masih diproses (409 ConflictException)
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "Marta",
+  "productName": "Jaket Leather",
+  "price": 349000,
+  "quantity": 1,
+  "address": "Jl. Sudirman No. 12, Surabaya",
+  "notes": "Pesanan kedua langsung"
+}
+
+###
+
+### 6. POST CREATE ORDER (ERROR - 400 BAD REQUEST DTO VALIDATION)
+# Validasi gagal: nama kosong, harga < 1000, alamat kurang dari 5 karakter, kuantitas 0
+POST {{baseUrl}}/orders
+Content-Type: application/json
+
+{
+  "customerName": "",
+  "productName": "Kaos",
+  "price": 100,
+  "quantity": 0,
+  "address": "Jl."
+}
+
+###
+
+### 7. PATCH UPDATE ORDER (SUCCESS - 200 OK)
+# User mengubah alamat pengiriman dan catatan pada pesanannya (200 OK)
+PATCH {{baseUrl}}/orders/1
+Content-Type: application/json
+
+{
+  "address": "Jl. Gatot Subroto No. 88, Jakarta Selatan (Rumah Baru)",
+  "notes": "Ukuran diganti XL, warna hitam"
+}
+
+###
+
+### 8. PATCH UPDATE ORDER (ERROR - 404 NOT FOUND)
+# Mengubah pesanan yang tidak ditemukan (404 NotFoundException)
+PATCH {{baseUrl}}/orders/999
+Content-Type: application/json
+
+{
+  "address": "Jl. Baru"
+}
+
+###
+
+### 9. DELETE ORDER (SUCCESS - 200 OK)
+# User membatalkan pesanan ID 2 (200 OK)
+DELETE {{baseUrl}}/orders/2
+Accept: application/json
+
+###
+
+### 10. DELETE ORDER (ERROR - 404 NOT FOUND)
+# Membatalkan pesanan yang tidak ada (404 NotFoundException)
+DELETE {{baseUrl}}/orders/999
+Accept: application/json
+
+
+###############################################################################
+### PENGUJIAN ENDPOINT KATALOG PRODUK (PRODUCTS)
+###############################################################################
+
+### GET ALL PRODUCTS
 GET {{baseUrl}}/products
 Accept: application/json
-
-###
-
-### 2. GET PRODUCT BY ID (SUCCESS)
-# Mengambil satu produk berdasarkan ID yang ada (200 OK)
-GET {{baseUrl}}/products/1
-Accept: application/json
-
-###
-
-### 3. GET PRODUCT BY ID (ERROR - 404 NOT FOUND)
-# Mengambil produk dengan ID yang tidak terdaftar (404 NotFoundException)
-GET {{baseUrl}}/products/999
-Accept: application/json
-
-###
-
-### 4. POST CREATE PRODUCT (SUCCESS - 201 CREATED)
-# Menambahkan produk baru yang valid (201 Created)
-POST {{baseUrl}}/products
-Content-Type: application/json
-
-{
-  "name": "Hoodie Minimalist Hitam",
-  "price": 259000,
-  "category": "Pakaian",
-  "stock": 35,
-  "description": "Hoodie katun fleece hangat dengan potongan relaxed fit dan kantong kangaroo.",
-  "isAvailable": true,
-  "image": "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop"
-}
-
-###
-
-### 5. POST CREATE PRODUCT (ERROR - 409 CONFLICT)
-# Menambahkan produk dengan nama yang sudah terdaftar (409 ConflictException)
-POST {{baseUrl}}/products
-Content-Type: application/json
-
-{
-  "name": "Hoodie Minimalist Hitam",
-  "price": 270000,
-  "category": "Pakaian",
-  "stock": 10
-}
-
-###
-
-### 6. POST CREATE PRODUCT (ERROR - 400 BAD REQUEST DTO VALIDATION)
-# Menguji validasi DTO (nama kosong, harga di bawah batas minimal, kategori di luar enum)
-POST {{baseUrl}}/products
-Content-Type: application/json
-
-{
-  "name": "",
-  "price": 500,
-  "category": "Makanan",
-  "stock": -5
-}
-
-###
-
-### 7. PATCH UPDATE PRODUCT (SUCCESS - 200 OK)
-# Memperbarui data produk ID 1 (200 OK)
-PATCH {{baseUrl}}/products/1
-Content-Type: application/json
-
-{
-  "price": 139000,
-  "stock": 40,
-  "description": "Kaos oversize berbahan katun combed premium 24s - Edisi Spesial Diskon!"
-}
-
-###
-
-### 8. PATCH UPDATE PRODUCT (ERROR - 404 NOT FOUND)
-# Memperbarui produk dengan ID yang tidak ada (404 NotFoundException)
-PATCH {{baseUrl}}/products/999
-Content-Type: application/json
-
-{
-  "price": 200000
-}
-
-###
-
-### 9. DELETE PRODUCT (SUCCESS - 200 OK)
-# Menghapus produk dengan ID 2 (200 OK)
-DELETE {{baseUrl}}/products/2
-Accept: application/json
-
-###
-
-### 10. DELETE PRODUCT (ERROR - 404 NOT FOUND)
-# Menghapus produk dengan ID yang tidak ditemukan (404 NotFoundException)
-DELETE {{baseUrl}}/products/999
-Accept: application/json
-

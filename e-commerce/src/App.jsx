@@ -8,7 +8,7 @@ import CategoryCard from "./components/CategoryCard";
 import ProductCard from "./components/ProductCard";
 import PromoSection from "./components/PromoSection";
 import BenefitSection from "./components/BenefitSection";
-import ProductManagement from "./components/ProductManagement";
+import OrderManagement from "./components/OrderManagement";
 import LoginForm from "./components/LoginForm";
 
 import products from "./data/product";
@@ -52,8 +52,19 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [showLogin, setShowLogin] = useState(false);
   const [productsList, setProductsList] = useState(products);
-  const [isBackendConnected, setIsBackendConnected] = useState(false);
-  const [isLoadingBackend, setIsLoadingBackend] = useState(false);
+
+  // Orders State (Backend NestJS /orders)
+  const [ordersList, setOrdersList] = useState([]);
+  const [isOrdersConnected, setIsOrdersConnected] = useState(false);
+  const [isLoadingOrders, setIsLoadingOrders] = useState(false);
+
+  // Modal Order Checkout
+  const [showOrderModal, setShowOrderModal] = useState(false);
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  const [orderAddress, setOrderAddress] = useState("");
+  const [orderNotes, setOrderNotes] = useState("");
+  const [isSubmittingOrder, setIsSubmittingOrder] = useState(false);
+  const [orderError, setOrderError] = useState("");
 
   // Filter & Search & Sort State
   const [searchKeyword, setSearchKeyword] = useState("");
@@ -70,50 +81,53 @@ function App() {
     }
   });
 
-  // Orders State
-  const [orders, setOrders] = useState([
-    {
-      id: 101,
-      productName: "Kaos Oversize",
-      price: 129000,
-      image: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop",
-      date: "18 Nov 2026",
-      status: "Selesai",
-    },
-  ]);
-
   const fetchProducts = async () => {
     try {
-      setIsLoadingBackend(true);
       const res = await fetch("http://localhost:3000/products");
       if (res.ok) {
         const data = await res.json();
         setProductsList(data);
-        setIsBackendConnected(true);
-      } else {
-        setIsBackendConnected(false);
       }
     } catch (err) {
-      console.warn("Backend NestJS offline, menggunakan data lokal fallback.", err);
-      setIsBackendConnected(false);
+      console.warn("Backend products offline, fallback ke data lokal.", err);
+    }
+  };
+
+  const fetchOrders = async () => {
+    try {
+      setIsLoadingOrders(true);
+      const res = await fetch("http://localhost:3000/orders");
+      if (res.ok) {
+        const data = await res.json();
+        setOrdersList(data);
+        setIsOrdersConnected(true);
+      } else {
+        setIsOrdersConnected(false);
+      }
+    } catch (err) {
+      console.warn("Backend orders offline", err);
+      setIsOrdersConnected(false);
     } finally {
-      setIsLoadingBackend(false);
+      setIsLoadingOrders(false);
     }
   };
 
   useEffect(() => {
     fetchProducts();
+    fetchOrders();
   }, []);
 
   const handlePageChange = (page) => {
     setActivePage(page);
     setSelectedProduct(null);
     setShowLogin(false);
+    setShowOrderModal(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const handleProductClick = (product) => {
     setSelectedProduct(product);
+    setShowOrderModal(false);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -131,7 +145,7 @@ function App() {
     localStorage.setItem("storeku_user", JSON.stringify(userData));
     setShowLogin(false);
     setActivePage("akun");
-    alert(`Selamat datang kembali, ${userData.name}! Login berhasil.`);
+    alert(`Selamat datang, ${userData.name}! Login berhasil.`);
   };
 
   const handleLogout = () => {
@@ -142,23 +156,68 @@ function App() {
     }
   };
 
-  const handleOrderProduct = (product) => {
-    const newOrder = {
-      id: Date.now(),
-      productName: product.name,
-      price: product.price,
-      image: product.image,
-      date: new Date().toLocaleDateString("id-ID", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      }),
-      status: "Diproses",
+  const handleOpenOrderModal = (product) => {
+    setSelectedProduct(product);
+    setOrderQuantity(1);
+    setOrderAddress(currentUser ? "Jl. Merdeka No. 45, Jakarta" : "");
+    setOrderNotes("Ukuran L");
+    setOrderError("");
+    setShowOrderModal(true);
+  };
+
+  const handleConfirmOrder = async (e) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+
+    if (!orderAddress || orderAddress.trim().length < 5) {
+      setOrderError("Alamat pengiriman minimal 5 karakter.");
+      return;
+    }
+
+    setIsSubmittingOrder(true);
+    setOrderError("");
+
+    const numericPrice = typeof selectedProduct.price === "number"
+      ? selectedProduct.price
+      : parseInt(String(selectedProduct.price).replace(/\D/g, "")) || 100000;
+
+    const payload = {
+      customerName: currentUser ? currentUser.name : "Marta",
+      productName: selectedProduct.name,
+      price: numericPrice,
+      quantity: Number(orderQuantity) || 1,
+      address: orderAddress.trim(),
+      notes: orderNotes.trim() || undefined,
+      image: selectedProduct.image,
     };
-    setOrders([newOrder, ...orders]);
-    setSelectedProduct(null);
-    setActivePage("pemesanan");
-    alert(`Pesanan untuk "${product.name}" berhasil dibuat!`);
+
+    try {
+      const response = await fetch("http://localhost:3000/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setOrderError(
+          Array.isArray(data.message) ? data.message.join(", ") : data.message || "Gagal membuat pesanan."
+        );
+        setIsSubmittingOrder(false);
+        return;
+      }
+
+      alert(`Pesanan "${selectedProduct.name}" berhasil dibuat dan tersimpan di backend!`);
+      setShowOrderModal(false);
+      setSelectedProduct(null);
+      await fetchOrders();
+      handlePageChange("pemesanan");
+    } catch (err) {
+      setOrderError("Gagal terhubung ke server backend NestJS di http://localhost:3000.");
+    } finally {
+      setIsSubmittingOrder(false);
+    }
   };
 
   // Filtered and Sorted Products for "Produk" Page
@@ -307,24 +366,9 @@ function App() {
                       Kategori: {selectedCategoryFilter} ✕
                     </button>
                   )}
-                  {isBackendConnected && (
-                    <span style={{ fontSize: "12px", color: "#059669", fontWeight: "600" }}>
-                      ● Live dari Backend NestJS
-                    </span>
-                  )}
                 </div>
 
                 <div style={{ display: "flex", gap: "10px", alignItems: "center", flexWrap: "wrap" }}>
-                  <button
-                    type="button"
-                    className="primary-page-button"
-                    style={{ padding: "6px 14px", fontSize: "13px", backgroundColor: "#4f46e5", borderColor: "#4f46e5" }}
-                    onClick={() => handlePageChange("kelola-produk")}
-                    title="Buka panel admin toko untuk menambah, mengedit, atau menghapus produk"
-                  >
-                    ⚙️ Panel Admin (CRUD Produk)
-                  </button>
-
                   <select
                     value={selectedCategoryFilter}
                     onChange={(e) => setSelectedCategoryFilter(e.target.value)}
@@ -379,16 +423,6 @@ function App() {
             </section>
           )}
 
-          {/* ================= KELOLA PRODUK (CRUD NESTJS) ================= */}
-          {activePage === "kelola-produk" && !selectedProduct && !showLogin && (
-            <ProductManagement
-              products={productsList}
-              onRefresh={fetchProducts}
-              isConnected={isBackendConnected}
-              isLoading={isLoadingBackend}
-            />
-          )}
-
           {/* ================= DETAIL PRODUK ================= */}
           {selectedProduct && (
             <section className="product-detail-page">
@@ -429,7 +463,7 @@ function App() {
                     <button
                       type="button"
                       className="primary-page-button"
-                      onClick={() => handleOrderProduct(selectedProduct)}
+                      onClick={() => handleOpenOrderModal(selectedProduct)}
                     >
                       Pesan Produk Sekarang
                     </button>
@@ -437,6 +471,132 @@ function App() {
                 </div>
               </div>
             </section>
+          )}
+
+          {/* ================= MODAL BUAT PESANAN BARU (POST) ================= */}
+          {showOrderModal && selectedProduct && (
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                backgroundColor: "rgba(0,0,0,0.5)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                zIndex: 9999,
+                padding: "16px",
+              }}
+            >
+              <div
+                style={{
+                  backgroundColor: "#ffffff",
+                  borderRadius: "14px",
+                  padding: "24px",
+                  maxWidth: "480px",
+                  width: "100%",
+                  boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px" }}>
+                  <h2 style={{ fontSize: "18px", fontWeight: "bold", margin: 0 }}>
+                    Form Pemesanan Barang
+                  </h2>
+                  <button
+                    type="button"
+                    onClick={() => setShowOrderModal(false)}
+                    style={{ background: "none", border: "none", fontSize: "18px", cursor: "pointer", color: "#6b7280" }}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div style={{ display: "flex", gap: "12px", alignItems: "center", padding: "12px", background: "#f8fafc", borderRadius: "10px", marginBottom: "16px" }}>
+                  <img
+                    src={selectedProduct.image}
+                    alt={selectedProduct.name}
+                    style={{ width: "50px", height: "50px", objectFit: "cover", borderRadius: "8px" }}
+                  />
+                  <div>
+                    <strong style={{ fontSize: "14px", display: "block" }}>{selectedProduct.name}</strong>
+                    <span style={{ fontSize: "13px", color: "#ea580c", fontWeight: "700" }}>
+                      {typeof selectedProduct.price === "number"
+                        ? `Rp ${selectedProduct.price.toLocaleString("id-ID")}`
+                        : selectedProduct.price}
+                    </span>
+                  </div>
+                </div>
+
+                {orderError && (
+                  <div style={{ padding: "10px", borderRadius: "6px", backgroundColor: "#fef2f2", color: "#991b1b", fontSize: "13px", marginBottom: "12px" }}>
+                    • {orderError}
+                  </div>
+                )}
+
+                <form onSubmit={handleConfirmOrder}>
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Jumlah Beli <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <input
+                      type="number"
+                      min={1}
+                      required
+                      value={orderQuantity}
+                      onChange={(e) => setOrderQuantity(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "12px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Alamat Pengiriman Lengkap <span style={{ color: "#ef4444" }}>*</span>
+                    </label>
+                    <textarea
+                      rows={3}
+                      required
+                      placeholder="Masukkan alamat rumah / kantor kamu (minimal 5 karakter)..."
+                      value={orderAddress}
+                      onChange={(e) => setOrderAddress(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ marginBottom: "18px" }}>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: "600", marginBottom: "4px" }}>
+                      Catatan Tambahan (Opsional)
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="Contoh: Ukuran L, warna hitam / packing bubble wrap"
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      style={{ width: "100%", padding: "8px 12px", borderRadius: "6px", border: "1px solid #d1d5db" }}
+                    />
+                  </div>
+
+                  <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                    <button
+                      type="button"
+                      onClick={() => setShowOrderModal(false)}
+                      style={{ padding: "8px 16px", borderRadius: "6px", border: "1px solid #d1d5db", background: "#f9fafb", cursor: "pointer" }}
+                    >
+                      Batal
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={isSubmittingOrder}
+                      className="primary-page-button"
+                      style={{ padding: "8px 20px" }}
+                    >
+                      {isSubmittingOrder ? "Mengirim..." : "Kirim Pesanan"}
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
           )}
 
           {/* ================= PROMO ================= */}
@@ -497,69 +657,15 @@ function App() {
             </section>
           )}
 
-          {/* ================= PEMESANAN ================= */}
+          {/* ================= PEMESANAN (TERHUBUNG KE BACKEND /orders) ================= */}
           {activePage === "pemesanan" && !showLogin && (
-            <section className="page-section">
-              <div className="page-header">
-                <span className="section-kicker">STATUS BELANJA</span>
-                <h1>Pemesanan Saya</h1>
-                <p>
-                  Daftar transaksi dan pesanan yang sedang kamu lakukan di Storeku.
-                </p>
-              </div>
-
-              {orders.length === 0 ? (
-                <div className="order-empty">
-                  <div className="order-empty-icon">🛍️</div>
-                  <h2>Belum Ada Pesanan</h2>
-                  <p>
-                    Kamu belum memiliki pesanan aktif. Yuk, pilih produk yang kamu suka!
-                  </p>
-                  <button
-                    type="button"
-                    className="primary-page-button"
-                    onClick={() => handlePageChange("produk")}
-                  >
-                    Mulai Belanja
-                  </button>
-                </div>
-              ) : (
-                <div className="order-list">
-                  {orders.map((order) => {
-                    const formattedOrderPrice = typeof order.price === "number"
-                      ? `Rp ${order.price.toLocaleString("id-ID")}`
-                      : order.price;
-
-                    return (
-                      <div className="order-item-card" key={order.id}>
-                        <img
-                          src={order.image || "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop"}
-                          alt={order.productName}
-                          className="order-thumb"
-                        />
-                        <div className="order-details">
-                          <h3>{order.productName}</h3>
-                          <p>{formattedOrderPrice}</p>
-                          <small style={{ color: "#6b7280" }}>Tanggal pesan: {order.date}</small>
-                        </div>
-                        <span className="order-status-badge">
-                          ● {order.status}
-                        </span>
-                      </div>
-                    );
-                  })}
-                  <div style={{ marginTop: "20px", textAlign: "right" }}>
-                    <button
-                      type="button"
-                      className="primary-page-button"
-                      onClick={() => handlePageChange("produk")}
-                    >
-                      + Tambah Pesanan Lain
-                    </button>
-                  </div>
-                </div>
-              )}
-            </section>
+            <OrderManagement
+              orders={ordersList}
+              onRefresh={fetchOrders}
+              isConnected={isOrdersConnected}
+              isLoading={isLoadingOrders}
+              onNavigateToProducts={() => handlePageChange("produk")}
+            />
           )}
 
           {/* ================= AKUN ================= */}
@@ -633,7 +739,7 @@ function App() {
                   <span className="account-menu-icon">🛍️</span>
                   <span className="account-menu-text">
                     <strong>Pesanan Saya</strong>
-                    <small>Lihat riwayat {orders.length} pesanan belanja kamu.</small>
+                    <small>Lihat riwayat {ordersList.length} pesanan belanja kamu.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -679,17 +785,17 @@ function App() {
                 <div className="account-detail-content">
                   <div className="account-detail-row">
                     <span>Nama</span>
-                    <strong>{currentUser ? currentUser.name : "Tamu / Pengguna Storeku"}</strong>
+                    <strong>{currentUser ? currentUser.name : "Marta"}</strong>
                   </div>
 
                   <div className="account-detail-row">
                     <span>Email</span>
-                    <strong>{currentUser ? currentUser.email : "Belum login"}</strong>
+                    <strong>{currentUser ? currentUser.email : "marta@example.com"}</strong>
                   </div>
 
                   <div className="account-detail-row">
                     <span>Nomor Telepon</span>
-                    <strong>{currentUser ? currentUser.phone : "Belum ditambahkan"}</strong>
+                    <strong>{currentUser ? currentUser.phone : "0812-3456-7890"}</strong>
                   </div>
 
                   <div className="account-detail-row">
