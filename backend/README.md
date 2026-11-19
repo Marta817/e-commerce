@@ -1,21 +1,16 @@
-# Backend NestJS - Storeku E-Commerce
+# Backend Storeku (NestJS)
 
-Modul backend untuk aplikasi Storeku yang dibangun menggunakan NestJS dengan arsitektur MVC.
+Backend buat aplikasi Storeku menggunakan framework NestJS dengan arsitektur MVC.
 
-## Cara Menjalankan Backend
-1. Masuk ke folder backend:
-   ```bash
-   cd backend
-   ```
-2. Pastikan dependensi sudah terpasang:
+## Cara Menjalankan
+1. Install dependencies:
    ```bash
    npm install
    ```
-3. Jalankan server mode development:
+2. Jalankan server:
    ```bash
    npm run start:dev
    ```
-Server akan aktif di `http://localhost:3000`.
 
-## Pengujian Endpoint
-Gunakan file `api.http` di root atau file `backend/api.http` untuk menguji endpoint produk menggunakan ekstensi REST Client di VS Code.
+Backend bakal jalan di `http://localhost:3000`.
+File testing endpoint ada di `api.http`.

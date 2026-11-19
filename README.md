@@ -1,172 +1,155 @@
-# Tugas Pekan 3 - Backend NestJS (Storeku E-Commerce)
+# Tugas Praktikum Pengembangan Aplikasi Web - Pekan 3
 
-Repository ini merupakan lanjutan dari proyek tugas pekan 2 (aplikasi web e-commerce pribadi **Storeku**). Pada pekan ini, saya mengimplementasikan fondasi backend menggunakan **NestJS** dengan pola arsitektur MVC (Model-View-Controller) dan menghubungkannya langsung ke frontend React yang sudah dibuat sebelumnya.
+Repository ini berisi tugas pekan 3 kelanjutan dari aplikasi **Storeku** (aplikasi e-commerce pribadi dari tugas pekan 2). Di pekan ini, fokus pengerjaannya adalah membangun backend menggunakan **NestJS** dengan struktur MVC dan menghubungkannya ke frontend React.
 
----
-
-## 👤 Identitas Mahasiswa
-- **Nama** : Marta
-- **NIM** : [Isi NIM]
-- **Kelas** : [Isi Kelas]
-- **Mata Kuliah** : Praktikum Pemrograman Web / Pengembangan Aplikasi Web
+### Identitas
+- **Nama**: Marta
+- **NIM**: [Isi NIM]
+- **Kelas**: [Isi Kelas]
 
 ---
 
-## 📌 Deskripsi Singkat Proyek
-Aplikasi **Storeku** adalah aplikasi web toko online untuk produk fashion dan lifestyle (pakaian, sepatu, tas, aksesoris). Pada tugas pekan ini:
-- Backend dibangun dengan framework **NestJS**.
-- Data utama yang dikelola adalah **Produk (`Product`)**.
-- Data sementara disimpan di dalam memori (**in-memory array**) pada Service.
-- Seluruh endpoint diuji menggunakan **REST Client** (`api.http`).
-- Frontend React sudah terhubung ke backend NestJS dengan alur CRUD penuh (menampilkan, menambah, mengubah, dan menghapus produk).
+## Penjelasan Singkat Aplikasi
+Storeku adalah web e-commerce sederhana untuk toko fashion/lifestyle. Pada tugas kali ini, backend dibuat untuk mengelola data utama berupa **Produk (`Product`)**. Seluruh data disimpan sementara di memori backend (in-memory array pada service) dan sudah terhubung langsung ke tampilan frontend sehingga produk bisa ditambah, diedit, dan dihapus secara realtime.
 
 ---
 
-## 🛠️ Rincian Pengerjaan Tugas
+## Poin-Poin Pengerjaan Tugas
 
-### 1. Data Utama Aplikasi
-Data utama yang saya gunakan adalah **Produk**. Entitas `Product` memiliki 9 atribut dengan tipe data yang bervariasi:
-- `id` (`number`): ID unik produk.
-- `name` (`string`): Nama produk.
-- `price` (`number`): Harga produk dalam Rupiah.
-- `category` (`string`): Kategori barang (`Pakaian`, `Outerwear`, `Sepatu`, `Tas`, `Aksesori`).
-- `stock` (`number`): Jumlah stok barang.
-- `description` (`string`): Keterangan/deskripsi produk.
-- `isAvailable` (`boolean`): Status apakah produk tersedia atau habis.
-- `image` (`string`): Link URL foto produk.
-- `createdAt` (`Date`): Waktu barang ditambahkan.
+1. **Data Utama (`Product`)**  
+   Data utama yang dikelola adalah Produk. Entitas dibuat di `backend/src/products/entities/product.entity.ts` dengan total 9 atribut:
+   - `id` (number)
+   - `name` (string)
+   - `price` (number)
+   - `category` (string: Pakaian, Outerwear, Sepatu, Tas, Aksesori)
+   - `stock` (number)
+   - `description` (string)
+   - `isAvailable` (boolean)
+   - `image` (string, opsional)
+   - `createdAt` (Date)
 
-### 2. Nest Resource & Struktur Entity
-Resource digenerate menggunakan command Nest CLI:
-```bash
-nest g resource products
-```
-File entity berada di `backend/src/products/entities/product.entity.ts`.
+2. **Resource NestJS**  
+   Dibuat menggunakan Nest CLI:
+   ```bash
+   nest g resource products
+   ```
+   File otomatis terbuat di folder `backend/src/products/`.
 
-### 3. Operasi CRUD pada Service (In-Memory Array)
-File service berada di `backend/src/products/products.service.ts`. Data produk disimpan di dalam array `private products: Product[] = [...]`. Operasi yang diimplementasikan:
-- `create()` : Menambah produk baru ke array.
-- `findAll()` : Menampilkan semua daftar produk.
-- `findOne()` : Menampilkan detail satu produk berdasarkan ID.
-- `update()` : Mengubah data produk tertentu.
-- `remove()` : Menghapus produk dari array berdasarkan ID.
+3. **Service CRUD (In-Memory)**  
+   Implementasi ada di `backend/src/products/products.service.ts`. Data disimpan dalam array `private products: Product[]` dengan fungsi CRUD lengkap:
+   - `create`: Menambahkan produk baru (ID dan createdAt otomatis dibuat).
+   - `findAll`: Mengambil semua list produk.
+   - `findOne`: Mengambil 1 produk berdasarkan ID.
+   - `update`: Mengupdate data produk tertentu.
+   - `remove`: Menghapus produk dari array.
 
-### 4. Controller & Dependency Injection
-File controller berada di `backend/src/products/products.controller.ts`. Controller memanggil `ProductsService` lewat Dependency Injection di constructor:
-```typescript
-constructor(private readonly productsService: ProductsService) {}
-```
-Method HTTP yang digunakan:
-- `GET /products` ➔ memanggil `findAll()`
-- `GET /products/:id` ➔ memanggil `findOne()`
-- `POST /products` ➔ memanggil `create()`
-- `PATCH /products/:id` ➔ memanggil `update()`
-- `DELETE /products/:id` ➔ memanggil `remove()`
+4. **Controller & Dependency Injection**  
+   Implementasi ada di `backend/src/products/products.controller.ts`. Service di-inject langsung melalui constructor (`constructor(private readonly productsService: ProductsService) {}`) tanpa membuat instance manual. Menggunakan method:
+   - `GET /products`
+   - `GET /products/:id` (dengan `ParseIntPipe`)
+   - `POST /products`
+   - `PATCH /products/:id`
+   - `DELETE /products/:id`
 
-### 5. Validasi DTO & Global ValidationPipe
-Validasi dibuat di `backend/src/products/dto/create-product.dto.ts` menggunakan library `class-validator`:
-- `@IsNotEmpty()`, `@IsString()`, `@MinLength(3)` untuk nama produk.
-- `@IsNotEmpty()`, `@IsNumber()`, `@Min(1000)` untuk harga minimal Rp 1.000.
-- `@IsIn(['Pakaian', 'Outerwear', 'Sepatu', 'Tas', 'Aksesori'])` untuk memastikan kategori valid.
-- `@IsInt()`, `@Min(0)` untuk validasi stok barang tidak boleh minus.
-- `@IsOptional()`, `@IsBoolean()` untuk status ketersediaan.
+5. **DTO & Validasi (class-validator)**  
+   DTO dibuat di `backend/src/products/dto/create-product.dto.ts` dan `update-product.dto.ts`. Validasi yang digunakan:
+   - `@IsNotEmpty()` dan `@IsString()`
+   - `@MinLength(3)` untuk nama produk minimal 3 karakter
+   - `@IsNumber()` dan `@Min(1000)` untuk harga minimal Rp 1.000
+   - `@IsIn()` untuk membatasi kategori yang dibolehkan
+   - `@IsInt()` dan `@Min(0)` untuk stok tidak boleh negatif
+   - `@IsOptional()` dan `@IsBoolean()` untuk ketersediaan
+   
+   ValidationPipe diaktifkan secara global di `backend/src/main.ts`:
+   ```typescript
+   app.useGlobalPipes(
+     new ValidationPipe({
+       whitelist: true,
+       forbidNonWhitelisted: true,
+       transform: true,
+     }),
+   );
+   ```
 
-`ValidationPipe` diaktifkan secara global di file `backend/src/main.ts`:
-```typescript
-app.useGlobalPipes(
-  new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-  }),
-);
-```
+6. **Error Handling (Exception Bawaan NestJS)**  
+   Menangani error menggunakan:
+   - `NotFoundException` (404): Muncul saat mencari, mengedit, atau menghapus produk dengan ID yang tidak ada.
+   - `ConflictException` (409): Muncul saat menambahkan produk dengan nama yang sudah pernah dibuat sebelumnya.
+   - `BadRequestException` (400): Muncul otomatis dari ValidationPipe jika isi body request tidak sesuai aturan DTO.
 
-### 6. Penanganan Error (Exception NestJS)
-Saya menerapkan minimal 2 skenario error bawaan NestJS:
-1. **`NotFoundException` (404)**: Dijalankan ketika user mencari, mengupdate, atau menghapus produk dengan ID yang tidak ada di memori.
-2. **`ConflictException` (409)**: Dijalankan ketika user mencoba menambah produk baru dengan nama yang sudah terdaftar (duplikat).
-3. **`BadRequestException` (400)**: Otomatis dimunculkan oleh ValidationPipe saat input request body tidak sesuai aturan DTO.
+7. **Testing REST Client**  
+   Seluruh endpoint sudah dites menggunakan file `api.http` di root proyek. Ada 10 skenario request (sukses dan error) yang sudah diuji.
+
+8. **Integrasi Frontend & Backend**  
+   - Backend sudah mengaktifkan CORS (`app.enableCors()`).
+   - Di frontend React (`e-commerce/`), dibuat halaman baru **Kelola Produk** (`ProductManagement.jsx`) yang langsung nembak ke `http://localhost:3000/products`.
+   - Alur CRUD berjalan penuh: user bisa tambah produk lewat modal, edit harga/stok, dan hapus produk.
+   - Katalog produk di halaman Beranda dan Produk juga otomatis menampilkan data live dari backend.
 
 ---
 
-## 💻 Cara Menjalankan Proyek
+## Cara Menjalankan Proyek
 
-### 1. Jalankan Backend (NestJS)
+### 1. Jalankan Backend
+Buka terminal:
 ```bash
 cd backend
 npm install
 npm run start:dev
 ```
-Backend berjalan di: `http://localhost:3000`
+Backend jalan di port 3000 (`http://localhost:3000`).
 
-### 2. Jalankan Frontend (React Vite)
+### 2. Jalankan Frontend
 Buka terminal baru:
 ```bash
 cd e-commerce
 npm install
 npm run dev
 ```
-Frontend berjalan di: `http://localhost:5173`
+Buka browser di `http://localhost:5173`. Masuk ke menu **Kelola Produk** di sidebar kiri.
 
 ---
 
-## 🧪 Pengujian REST API (REST Client)
-
-Seluruh endpoint diuji menggunakan file `api.http` (bisa dibuka langsung di VS Code menggunakan extension REST Client).
-
-Skenario pengujian yang tersedia:
-1. `GET /products` (Ambil semua produk - 200 OK)
-2. `GET /products/1` (Ambil detail produk ID 1 - 200 OK)
-3. `GET /products/999` (ID tidak ditemukan - 404 NotFoundException)
-4. `POST /products` (Tambah produk baru - 201 Created)
-5. `POST /products` (Nama produk kembar - 409 ConflictException)
-6. `POST /products` (Validasi DTO gagal - 400 Bad Request)
-7. `PATCH /products/1` (Update data produk - 200 OK)
-8. `PATCH /products/999` (Update ID tidak ada - 404 NotFoundException)
-9. `DELETE /products/2` (Hapus produk ID 2 - 200 OK)
-10. `DELETE /products/999` (Hapus ID tidak ada - 404 NotFoundException)
-
----
-
-## 📷 Dokumentasi Screenshot Pengujian
+## Screenshot Pengujian
 
 Screenshot pengujian disimpan di folder `docs/screenshots/`:
 
-### A. Pengujian Backend (REST Client)
-1. **GET All Products (200 OK)**  
-   ![GET All Products](docs/screenshots/01-get-all.png)
+### 1. REST Client (Backend)
 
-2. **GET Product by ID (200 OK)**  
-   ![GET Product by ID](docs/screenshots/02-get-by-id.png)
+- **GET All Products (200 OK)**  
+  ![GET All Products](docs/screenshots/01-get-all.png)
 
-3. **GET Product Not Found (404 NotFoundException)**  
-   ![GET 404 Not Found](docs/screenshots/03-get-not-found.png)
+- **GET Product by ID (200 OK)**  
+  ![GET Product by ID](docs/screenshots/02-get-by-id.png)
 
-4. **POST Create Product (201 Created)**  
-   ![POST Create Product](docs/screenshots/04-post-success.png)
+- **GET Product by ID - Not Found (404)**  
+  ![GET Not Found](docs/screenshots/03-get-not-found.png)
 
-5. **POST Duplicate Conflict (409 ConflictException)**  
-   ![POST 409 Conflict](docs/screenshots/05-post-conflict.png)
+- **POST Create Product (201 Created)**  
+  ![POST Create Product](docs/screenshots/04-post-success.png)
 
-6. **POST Validation Error (400 Bad Request)**  
-   ![POST 400 Bad Request](docs/screenshots/06-post-validation-error.png)
+- **POST Create - Conflict Nama Duplikat (409)**  
+  ![POST Conflict](docs/screenshots/05-post-conflict.png)
 
-7. **PATCH Update Product (200 OK)**  
-   ![PATCH Update Product](docs/screenshots/07-patch-success.png)
+- **POST Create - Validasi DTO Gagal (400 Bad Request)**  
+  ![POST Validation Error](docs/screenshots/06-post-validation-error.png)
 
-8. **DELETE Remove Product (200 OK)**  
-   ![DELETE Remove Product](docs/screenshots/08-delete-success.png)
+- **PATCH Update Product (200 OK)**  
+  ![PATCH Update Product](docs/screenshots/07-patch-success.png)
 
-### B. Integrasi Frontend (Storeku)
-1. **Menu Kelola Produk (Koneksi Backend Aktif)**  
-   ![Frontend Kelola Produk](docs/screenshots/09-frontend-kelola-produk.png)
+- **DELETE Product (200 OK)**  
+  ![DELETE Product](docs/screenshots/08-delete-success.png)
 
-2. **Form Modal Tambah Produk**  
-   ![Frontend Tambah Produk](docs/screenshots/10-frontend-tambah-produk.png)
+### 2. Tampilan Frontend
 
-3. **Form Modal Edit Produk**  
-   ![Frontend Edit Produk](docs/screenshots/11-frontend-edit-produk.png)
+- **Halaman Kelola Produk (Status Backend Terhubung)**  
+  ![Frontend Kelola Produk](docs/screenshots/09-frontend-kelola-produk.png)
 
-4. **Hapus Data Produk & Feedback Berhasil**  
-   ![Frontend Hapus Produk](docs/screenshots/12-frontend-hapus-produk.png)
+- **Modal Form Tambah Produk Baru**  
+  ![Frontend Tambah Produk](docs/screenshots/10-frontend-tambah-produk.png)
+
+- **Modal Form Edit Produk**  
+  ![Frontend Edit Produk](docs/screenshots/11-frontend-edit-produk.png)
+
+- **Hapus Data Produk & Alert Berhasil**  
+  ![Frontend Hapus Produk](docs/screenshots/12-frontend-hapus-produk.png)
