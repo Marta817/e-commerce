@@ -676,7 +676,7 @@ function App() {
                 <span className="section-kicker">PROFIL PENGGUNA</span>
                 <h1>Akun Saya</h1>
                 <p>
-                  Kelola informasi akun dan preferensi belanja kamu.
+                  Kelola data akun pembeli untuk pemesanan barang di Storeku.
                 </p>
               </div>
 
@@ -684,34 +684,46 @@ function App() {
                 <div className="account-avatar">👤</div>
 
                 <div className="account-info">
-                  <span>AKUN STOREKU</span>
+                  <span>DATA AKUN</span>
                   {currentUser ? (
                     <>
                       <h2>Halo, {currentUser.name}!</h2>
                       <p>
-                        Alamat Pengiriman: <strong>{currentUser.address || "Jl. Merdeka No. 45, Jakarta Selatan"}</strong> • Status: <span style={{ color: "#16a34a", fontWeight: "600" }}>Aktif</span>
+                        No. HP: <strong>{currentUser.phone}</strong>
                       </p>
-                      <button
-                        type="button"
-                        className="primary-page-button"
-                        style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
-                        onClick={handleLogout}
-                      >
-                        Keluar / Logout
-                      </button>
+                      <p style={{ marginTop: "4px" }}>
+                        Alamat: <strong>{currentUser.address}</strong>
+                      </p>
+                      <div style={{ display: "flex", gap: "10px", marginTop: "14px", flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          className="primary-page-button"
+                          onClick={() => setShowLogin(true)}
+                        >
+                          Ubah Data Akun
+                        </button>
+                        <button
+                          type="button"
+                          className="primary-page-button"
+                          style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
+                          onClick={handleLogout}
+                        >
+                          Keluar / Logout
+                        </button>
+                      </div>
                     </>
                   ) : (
                     <>
-                      <h2>Selamat Datang!</h2>
+                      <h2>Belum Ada Data Akun</h2>
                       <p>
-                        Silakan masuk untuk mengelola akun, melihat riwayat pesanan, dan informasi profil kamu.
+                        Silakan isi data nama, no. HP, dan alamat pengiriman kamu.
                       </p>
                       <button
                         type="button"
                         className="primary-page-button"
                         onClick={() => setShowLogin(true)}
                       >
-                        Masuk / Login
+                        Isi Data Akun
                       </button>
                     </>
                   )}
@@ -727,7 +739,7 @@ function App() {
                   <span className="account-menu-icon">👤</span>
                   <span className="account-menu-text">
                     <strong>Informasi Akun</strong>
-                    <small>Lihat detail data akun yang sedang digunakan.</small>
+                    <small>Lihat detail nama, no. HP, dan alamat pengiriman.</small>
                   </span>
                   <span className="account-menu-arrow">›</span>
                 </button>
@@ -776,7 +788,7 @@ function App() {
                 <span className="section-kicker">DETAIL PENGGUNA</span>
                 <h1>Informasi Akun</h1>
                 <p>
-                  Informasi profil pengguna Storeku yang sedang aktif.
+                  Data identitas pembeli untuk pengiriman pesanan di Storeku.
                 </p>
               </div>
 
@@ -785,48 +797,42 @@ function App() {
 
                 <div className="account-detail-content">
                   <div className="account-detail-row">
-                    <span>Nama Lengkap</span>
-                    <strong>{currentUser ? currentUser.name : "Marta"}</strong>
+                    <span>Nama</span>
+                    <strong>{currentUser ? currentUser.name : "Belum diisi"}</strong>
                   </div>
 
                   <div className="account-detail-row">
-                    <span>Alamat Pengiriman Utama</span>
-                    <strong>{currentUser?.address || "Jl. Merdeka No. 45, Jakarta Selatan"}</strong>
+                    <span>No. HP</span>
+                    <strong>{currentUser ? currentUser.phone : "Belum diisi"}</strong>
                   </div>
 
                   <div className="account-detail-row">
-                    <span>Nomor Telepon</span>
-                    <strong>{currentUser ? currentUser.phone : "0812-3456-7890"}</strong>
-                  </div>
-
-                  <div className="account-detail-row">
-                    <span>Status Autentikasi</span>
-                    <strong style={{ color: currentUser ? "#16a34a" : "#dc2626" }}>
-                      {currentUser ? "Sudah Login (Terautentikasi)" : "Belum Login"}
-                    </strong>
+                    <span>Alamat</span>
+                    <strong>{currentUser ? currentUser.address : "Belum diisi"}</strong>
                   </div>
                 </div>
               </div>
 
-              {currentUser ? (
+              <div style={{ display: "flex", gap: "10px", marginTop: "16px", flexWrap: "wrap" }}>
                 <button
                   type="button"
                   className="primary-page-button"
-                  style={{ backgroundColor: "#ef4444", borderColor: "#ef4444", marginTop: "16px" }}
-                  onClick={handleLogout}
-                >
-                  Keluar dari Akun
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="primary-page-button"
-                  style={{ marginTop: "16px" }}
                   onClick={() => setShowLogin(true)}
                 >
-                  Masuk ke Akun Sekarang
+                  {currentUser ? "Ubah Data Akun" : "Isi Data Akun"}
                 </button>
-              )}
+
+                {currentUser && (
+                  <button
+                    type="button"
+                    className="primary-page-button"
+                    style={{ backgroundColor: "#ef4444", borderColor: "#ef4444" }}
+                    onClick={handleLogout}
+                  >
+                    Keluar / Hapus Data
+                  </button>
+                )}
+              </div>
             </section>
           )}
 
@@ -898,6 +904,7 @@ function App() {
           {/* ================= MODAL / HALAMAN LOGIN ================= */}
           {showLogin && (
             <LoginForm
+              initialData={currentUser}
               onBack={() => setShowLogin(false)}
               onLoginSuccess={handleLoginSuccess}
             />

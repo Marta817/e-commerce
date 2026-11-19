@@ -1,19 +1,16 @@
 import { useState } from "react";
 
-function LoginForm({ onBack, onLoginSuccess }) {
-  const [name, setName] = useState("");
-  const [address, setAddress] = useState("");
-  const [phone, setPhone] = useState("");
-  const [password, setPassword] = useState("");
+function LoginForm({ initialData, onBack, onLoginSuccess }) {
+  const [name, setName] = useState(initialData?.name || "");
+  const [phone, setPhone] = useState(initialData?.phone || "");
+  const [address, setAddress] = useState(initialData?.address || "");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const displayName = name.trim() || "Marta";
     const user = {
-      name: displayName,
-      address: address.trim() || "Jl. Merdeka No. 45, Jakarta Selatan",
+      name: name.trim() || "Marta",
       phone: phone.trim() || "0812-3456-7890",
-      status: "Aktif",
+      address: address.trim() || "Jl. Merdeka No. 45, Jakarta Selatan",
     };
 
     if (onLoginSuccess) {
@@ -25,14 +22,14 @@ function LoginForm({ onBack, onLoginSuccess }) {
     <section className="login-page">
       <div className="login-card">
         <div className="login-header">
-          <span className="section-kicker">STOREKU AUTENTIKASI</span>
-          <h1>Masuk ke Akun</h1>
-          <p>Lengkapi identitas untuk memudahkan pengiriman pesanan kamu.</p>
+          <span className="section-kicker">STOREKU AKUN</span>
+          <h1>Data Akun</h1>
+          <p>Masukkan nama, no. HP, dan alamat pengiriman kamu.</p>
         </div>
 
         <form onSubmit={handleSubmit} className="login-form">
           <div className="form-group">
-            <label htmlFor="name">Nama Lengkap <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="name">Nama <span style={{ color: "red" }}>*</span></label>
             <input
               id="name"
               type="text"
@@ -44,10 +41,22 @@ function LoginForm({ onBack, onLoginSuccess }) {
           </div>
 
           <div className="form-group">
-            <label htmlFor="address">Alamat Pengiriman Lengkap <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="phone">No. HP <span style={{ color: "red" }}>*</span></label>
+            <input
+              id="phone"
+              type="tel"
+              placeholder="Contoh: 0812-3456-7890"
+              required
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="address">Alamat <span style={{ color: "red" }}>*</span></label>
             <textarea
               id="address"
-              rows={2}
+              rows={3}
               placeholder="Contoh: Jl. Merdeka No. 45, Jakarta Selatan"
               required
               value={address}
@@ -56,31 +65,8 @@ function LoginForm({ onBack, onLoginSuccess }) {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="phone">Nomor Telepon / WhatsApp</label>
-            <input
-              id="phone"
-              type="tel"
-              placeholder="Contoh: 0812-3456-7890"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="password">Password <span style={{ color: "red" }}>*</span></label>
-            <input
-              id="password"
-              type="password"
-              placeholder="Masukkan password"
-              required
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-
           <button type="submit" className="primary-page-button" style={{ width: "100%", marginTop: "10px" }}>
-            Masuk / Simpan Profil
+            Simpan Data Akun
           </button>
         </form>
 
@@ -89,7 +75,7 @@ function LoginForm({ onBack, onLoginSuccess }) {
           className="back-button"
           onClick={onBack}
         >
-          ← Kembali
+          ← Batal
         </button>
       </div>
     </section>
