@@ -162,7 +162,7 @@ function App() {
   const handleOpenOrderModal = (product) => {
     setSelectedProduct(product);
     setOrderQuantity(1);
-    setOrderAddress(currentUser ? "Jl. Merdeka No. 45, Jakarta" : "");
+    setOrderAddress(currentUser?.address || "Jl. Merdeka No. 45, Jakarta Selatan");
     setOrderNotes("Ukuran L");
     setOrderError("");
     setShowOrderModal(true);
@@ -689,7 +689,7 @@ function App() {
                     <>
                       <h2>Halo, {currentUser.name}!</h2>
                       <p>
-                        Email: <strong>{currentUser.email}</strong> • Status: <span style={{ color: "#16a34a", fontWeight: "600" }}>Aktif</span>
+                        Alamat Pengiriman: <strong>{currentUser.address || "Jl. Merdeka No. 45, Jakarta Selatan"}</strong> • Status: <span style={{ color: "#16a34a", fontWeight: "600" }}>Aktif</span>
                       </p>
                       <button
                         type="button"
@@ -785,13 +785,13 @@ function App() {
 
                 <div className="account-detail-content">
                   <div className="account-detail-row">
-                    <span>Nama</span>
+                    <span>Nama Lengkap</span>
                     <strong>{currentUser ? currentUser.name : "Marta"}</strong>
                   </div>
 
                   <div className="account-detail-row">
-                    <span>Email</span>
-                    <strong>{currentUser ? currentUser.email : "marta@example.com"}</strong>
+                    <span>Alamat Pengiriman Utama</span>
+                    <strong>{currentUser?.address || "Jl. Merdeka No. 45, Jakarta Selatan"}</strong>
                   </div>
 
                   <div className="account-detail-row">
