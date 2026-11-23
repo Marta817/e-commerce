@@ -1,11 +1,11 @@
-# Tugas Praktikum Pengembangan Aplikasi Web - Pekan 3
+# Tugas Praktikum Pengembangan Aplikasi Web
 
-Repository ini berisi tugas pekan 3 kelanjutan dari aplikasi **Storeku** (aplikasi e-commerce pribadi dari tugas pekan 2). Di pekan ini, fokus pengerjaannya adalah membangun backend menggunakan **NestJS** dengan struktur MVC dan menghubungkannya ke frontend React.
+Repository ini berisi tugas praktikum pengembangan aplikasi web kelanjutan dari aplikasi **Storeku** (aplikasi e-commerce pribadi). Di tugas ini, fokus pengerjaannya adalah membangun backend menggunakan **NestJS** dengan struktur MVC (In-Memory Array CRUD, DTO Validation, Exception Handling) dan menghubungkannya ke frontend React.
 
-### Identitas
-- **Nama**: Marta
-- **NIM**: [Isi NIM]
-- **Kelas**: [Isi Kelas]
+### Identitas Mahasiswa
+- **Nama**: Marta Safitri
+- **NIM**: 103122400047
+- **Kelas**: SE - 08 - 02
 
 ---
 

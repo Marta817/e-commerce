@@ -1,4 +1,8 @@
-# Dokumentasi Screenshot Pengujian Tugas (Pekan 3)
+# Nama: Marta Safitri
+# NIM: 103122400047
+# Kelas: SE - 08 - 02
+
+# Dokumentasi Screenshot Pengujian Tugas (Pekan 9)
 
 Dokumentasi ini berisi bukti pengujian endpoint REST API backend (NestJS) menggunakan REST Client (`api.http`) serta bukti alur CRUD pada tampilan frontend:
 
